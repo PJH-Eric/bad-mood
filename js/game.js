@@ -13,10 +13,10 @@
     '摩天輪……我們再坐一次。', '防曬乳，現在可以幫我擦了。', '（小聲）下次，也要陪我來。', '便當……我們一起吃吧。', '雞蛋，記得是「雞」蛋喔。',
     '末班車……我們慢慢走回家吧。', '蛋糕我們一人一半。', '今晚的星星，我們一起看。', '螢光棒……給你一支。', '',
   ];
-  const state = { name: '小晴', cleared: Array(20).fill(false), fails: 0, speed: 'mid', sfx: true, bgm: true };
+  const state = { name: '小晴', cleared: Array(20).fill(false), clearedR: Array(20).fill(false), fails: 0, failsR: 0, mode: 'fixed', speed: 'mid', sfx: true, bgm: true };
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
   function load() {
-    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); if (!Array.isArray(state.cleared) || state.cleared.length !== 20) state.cleared = Array(20).fill(false); } } catch (e) { }
+    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); ['cleared', 'clearedR'].forEach((k) => { if (!Array.isArray(state[k]) || state[k].length !== 20) state[k] = Array(20).fill(false); }); if (state.mode !== 'rand') state.mode = 'fixed'; } } catch (e) { }
   }
   const nm = (t) => String(t).replace(/\{n\}/g, state.name);
   const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -89,16 +89,30 @@
   const limitFor = (idx) => Math.round(30 - idx * (22 / 19));
 
   /* ---------- 出題 ---------- */
-  function buildQuestions(lv) {
-    const list = lv.fixed.slice();
-    shuffle(lv.pool).slice(0, lv.pick).forEach((q) => list.splice(1 + (Math.random() * list.length | 0), 0, q));
+  // 固定題模式：每關題目、順序、選項排列每次都完全相同（以關卡編號為種子）
+  // 全隨機模式：從該關整個題庫（固定題＋題池）隨機抽題，順序與選項每次都不同
+  function rngOf(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function shuffleWith(a, r) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = r() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]]; } return a; }
+  // 讓玩家（男主角）的回答也會喊出她的名字：約四成的選項會帶名字，與對錯無關，避免成為線索
+  function addName(t, r) {
+    if (t.includes('{n}') || t.startsWith('（') || t.length > 28 || r() >= .4) return t;
+    if (r() < .55) return '{n}，' + t;
+    return /[。？！]$/.test(t) && !/……$/.test(t) ? t.slice(0, -1) + '，{n}' + t.slice(-1) : '{n}，' + t;
+  }
+  function buildQuestions(lv, idx, mode) {
+    const rand = mode === 'rand', r = rand ? Math.random : rngOf((idx + 1) * 7919 + 13);
+    let list;
+    if (rand) list = shuffleWith(lv.fixed.concat(lv.pool), r).slice(0, lv.fixed.length + lv.pick);
+    else { list = lv.fixed.slice(); shuffleWith(lv.pool, r).slice(0, lv.pick).forEach((q) => list.splice(1 + (r() * list.length | 0), 0, q)); }
     return list.map((q) => {
-      const good = q.good[Math.random() * q.good.length | 0];
-      const nb = Math.min(q.bad.length, [1, 2, 2, 3, 3][Math.random() * 5 | 0]);
-      const opts = shuffle([{ t: good, ok: true }].concat(shuffle(q.bad).slice(0, nb).map((t) => ({ t, ok: false }))));
+      const good = rand ? q.good[r() * q.good.length | 0] : q.good[0];
+      const nb = Math.min(q.bad.length, rand ? [1, 2, 2, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
+      const opts = shuffleWith([{ t: addName(good, r), ok: true }].concat(shuffleWith(q.bad, r).slice(0, nb).map((t) => ({ t: addName(t, r), ok: false }))), r);
       return { q, opts };
     });
   }
+  const CL = () => (state.mode === 'rand' ? state.clearedR : state.cleared);
+  const FK = () => (state.mode === 'rand' ? 'failsR' : 'fails');
 
   /* ---------- 作答 ---------- */
   let runId = 0, cur = null, paused = false;
@@ -118,10 +132,10 @@
 
   async function playLevel(idx) {
     const tok = ++runId, chk = () => { if (tok !== runId) throw CANCEL; };
-    const lv = LV[idx], qs = buildQuestions(lv); cur = { idx, qs, qi: 0, opts: null };
+    const lv = LV[idx], qs = buildQuestions(lv, idx, state.mode); cur = { idx, qs, qi: 0, opts: null };
     try {
       titleStop(); hideAll(); inGameUI(true); setScene(lv.scene);
-      $('lvTag').textContent = `第 ${idx + 1} 關 ‧ ${lv.place}`;
+      $('lvTag').textContent = `第 ${idx + 1} 關 ‧ ${lv.place} ‧ ${state.mode === 'rand' ? '全隨機' : '固定題'}`;
       const dots = $('dots'); dots.innerHTML = qs.map(() => '<i></i>').join('');
       $('timerBar').style.transform = 'scaleX(1)'; $('dlgText').textContent = ''; $('nameTag').style.display = 'none';
       // 開場卡
@@ -147,7 +161,7 @@
     async function fail(line, qi) {
       setGirl('angry'); setBoy('shock'); Au.play('bad'); $('stage').classList.remove('shake'); void $('stage').offsetWidth; $('stage').classList.add('shake');
       await say(state.name, line); chk(); await sleep(1100); chk();
-      state.fails++; save(); inGameUI(false);
+      state[FK()]++; save(); inGameUI(false);
       $('overMsg').textContent = `${state.name}氣得轉身走了……\n（第 ${idx + 1} 關　${lv.place}　第 ${qi + 1} / ${qs.length} 題）`;
       show('scrOver');
     }
@@ -155,7 +169,7 @@
 
   async function winLevel(idx, tok) {
     const chk = () => { if (tok !== runId) throw CANCEL; };
-    state.cleared[idx] = true; save(); Au.play('clear');
+    CL()[idx] = true; save(); Au.play('clear');
     setGirl('happy'); setBoy('happy');
     if (idx === 19) { await endGame(tok); return; }
     await say(state.name, CLEARS[idx]); chk(); await waitNext(); chk();
@@ -170,9 +184,9 @@
     setGirl('blush');
     for (const l of L) { await say(state.name, l); chk(); await waitNext(); chk(); }
     setGirl('happy'); inGameUI(false);
-    const f = state.fails;
+    const f = state[FK()];
     const rank = f <= 5 ? '完美男友　讀心術大師' : f <= 15 ? '超懂她　高級男友' : f <= 30 ? '努力型男友　愈挫愈勇' : '靠毅力通關的勇者　她看見了你的誠意';
-    $('endMsg').textContent = `${state.name}終於笑了。\n恭喜你通過全部 20 個場景！`;
+    $('endMsg').textContent = `${state.name}終於笑了。\n恭喜你通過全部 20 個場景！（${state.mode === 'rand' ? '全隨機模式' : '固定題模式'}）`;
     $('endStat').innerHTML = '';
     const a = document.createElement('div'); a.append('累計踩雷（GAME OVER）次數：', Object.assign(document.createElement('b'), { textContent: f }), ' 次');
     const b = document.createElement('div'); b.append('評級：', Object.assign(document.createElement('b'), { textContent: rank }));
@@ -182,13 +196,15 @@
 
   /* ---------- 選關 ---------- */
   function renderSelect() {
-    const g = $('grid'); g.innerHTML = ''; const done = state.cleared.filter(Boolean).length; let nextIdx = state.cleared.indexOf(false);
+    const g = $('grid'); g.innerHTML = ''; const cl = CL(), done = cl.filter(Boolean).length; let nextIdx = cl.indexOf(false);
+    [...$('modeTabs').children].forEach((b) => b.classList.toggle('on', b.dataset.m === state.mode));
+    $('modeDesc').textContent = state.mode === 'rand' ? '整個題庫隨機抽題：題目、順序、選項每次都不同。進度與固定題模式分開計算。' : '每關題目與順序固定，每次都一樣，可以記住她的地雷。進度與全隨機模式分開計算。';
     LV.forEach((lv, i) => {
-      const unlocked = debug || i === 0 || state.cleared[i - 1], c = document.createElement('div');
-      c.className = 'card' + (state.cleared[i] ? ' cleared' : '') + (unlocked ? '' : ' locked');
+      const unlocked = debug || i === 0 || cl[i - 1], c = document.createElement('div');
+      c.className = 'card' + (cl[i] ? ' cleared' : '') + (unlocked ? '' : ' locked');
       const no = document.createElement('div'); no.className = 'no'; no.textContent = i + 1;
       const pl = document.createElement('div'); pl.className = 'pl'; pl.textContent = unlocked ? lv.place : '？？？';
-      const st = document.createElement('div'); st.className = 'st'; st.textContent = !unlocked ? '未解鎖' : state.cleared[i] ? '已通關' : i === nextIdx ? '挑戰中' : '可挑戰';
+      const st = document.createElement('div'); st.className = 'st'; st.textContent = !unlocked ? '未解鎖' : cl[i] ? '已通關' : i === nextIdx ? '挑戰中' : '可挑戰';
       c.append(no, pl, st);
       c.addEventListener('click', () => { if (!unlocked) return; Au.play('click'); playLevel(i); });
       g.appendChild(c);
@@ -211,7 +227,7 @@
       const L = ['bg', 'bgx', 'girlG', 'boyG', 'fxG', 'fxB']; L.forEach((i) => ($(i).style.opacity = 0));
       setTimeout(() => { tIdx++; titleFrame(); L.forEach((i) => ($(i).style.opacity = 1)); }, 650);
     }, 6500);
-    const n = state.cleared.filter(Boolean).length; $('progChip').textContent = n ? `　進度 ${n} / 20` : '';
+    const n1 = state.cleared.filter(Boolean).length, n2 = state.clearedR.filter(Boolean).length; $('progChip').textContent = n1 + n2 ? `　固定 ${n1}／隨機 ${n2}` : '';
   }
   function titleStop() { clearInterval(tTimer); titleLayout(false); ['bg', 'bgx', 'girlG', 'boyG', 'fxG', 'fxB'].forEach((i) => ($(i).style.opacity = 1)); }
   (function petals() { const p = $('petals'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random() * 100 + '%'; d.style.animationDuration = 7 + Math.random() * 7 + 's'; d.style.animationDelay = -Math.random() * 12 + 's'; d.style.setProperty('--s', .6 + Math.random() * .9); p.appendChild(d); } })();
@@ -251,14 +267,18 @@
     confirmBox('離開本關', '要離開這一關、回到選關畫面嗎？\n本關目前的進度不會保留。', toSelect, closePause);
   };
   $('pHome').onclick = () => { Au.play('click'); paused = false; timer.paused = false; toTitle(); };
-  $('btnClear').onclick = () => confirmBox('清除進度', '所有關卡進度與累計次數都會歸零，確定要清除嗎？', () => { state.cleared = Array(20).fill(false); state.fails = 0; save(); refreshSet(); show('scrSet'); });
+  $('btnClear').onclick = () => confirmBox('清除進度', '所有關卡進度與累計次數都會歸零，確定要清除嗎？', () => { state.cleared = Array(20).fill(false); state.clearedR = Array(20).fill(false); state.fails = 0; state.failsR = 0; save(); refreshSet(); show('scrSet'); });
 
   /* ---------- 其他按鈕 ---------- */
   $('btnStart').onclick = () => {
     Au.unlock(); Au.play('click'); if (state.bgm) Au.startBgm();
-    state.name = ($('nameIn').value.trim() || '小晴').slice(0, 8); save(); renderSelect(); show('scrSelect');
+    state.name = ($('nameIn').value.trim() || randName()).slice(0, 8); $('nameIn').value = state.name; save(); renderSelect(); show('scrSelect');
   };
+  const NAMES = ['小晴', '小美', '雅婷', '怡君', '欣妤', '思妍', '詩涵', '佳蓉', '靜怡', '郁婷', '品妍', '芷若', '語晴', '沐恩', '宛庭', '子晴', '雨桐', '安琪', '心怡', '妍希', '曉彤', '柔安', '可晴', '若彤', '梓涵', '筱柔', '米米', '小櫻', '小雪', '小薰', '依依', '婉婷', '羽彤', '知夏', '星語', '蜜桃', '芷晴', '昕妤', '悅慈', '映彤'];
+  function randName() { let n; do { n = NAMES[Math.random() * NAMES.length | 0]; } while (n === $('nameIn').value && NAMES.length > 1); return n; }
+  $('btnRandName').onclick = () => { Au.unlock(); Au.play('click'); $('nameIn').value = randName(); };
   $('nameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnStart').click(); e.stopPropagation(); });
+  $('modeTabs').onclick = (e) => { const m = e.target.dataset && e.target.dataset.m; if (!m || m === state.mode) return; Au.play('click'); state.mode = m; save(); renderSelect(); };
   $('selBack').onclick = () => { Au.play('click'); toTitle(); };
   $('btnRetry').onclick = () => { Au.play('click'); playLevel(cur.idx); };
   $('btnOverSel').onclick = () => { Au.play('click'); toSelect(); };
@@ -279,5 +299,5 @@
   load(); Au.setSfx(state.sfx); Au.st.bgm = state.bgm;
   $('nameIn').value = state.name === '小晴' && !localStorage.getItem(KEY) ? '' : state.name;
   show('scrTitle'); titleStart();
-  G.game = { state, playLevel, get cur() { return cur; }, buildQuestions };
+  G.game = { state, playLevel, get cur() { return cur; }, buildQuestions, rngOf };
 })(window.GAME = window.GAME || {});

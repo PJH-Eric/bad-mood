@@ -69,7 +69,8 @@
       <div class="menuPanel">
         <div class="nameRow">
           <label for="nameIn">她的名字</label>
-          <input id="nameIn" maxlength="8" autocomplete="off" spellcheck="false" placeholder="輸入女友的名字">
+          <input id="nameIn" maxlength="8" autocomplete="off" spellcheck="false" placeholder="輸入或按隨機">
+          <button class="gbtn small" id="btnRandName" type="button" aria-label="隨機產生名字">隨機</button>
         </div>
         <button class="gbtn big" id="btnStart">開始遊戲<small id="progChip"></small></button>
         <div class="btnRow">
@@ -84,6 +85,8 @@
     <section id="scrSelect" class="scr hidden">
       <div class="panel wide">
         <div class="panelHead"><button class="gbtn small" id="selBack">‹ 返回</button><h2>選擇場景</h2><div id="selStat"></div></div>
+        <div id="modeTabs"><button class="tab on" data-m="fixed">固定題模式</button><button class="tab" data-m="rand">全隨機模式</button></div>
+        <div id="modeDesc"></div>
         <div id="grid"></div>
       </div>
     </section>
