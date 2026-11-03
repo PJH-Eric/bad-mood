@@ -14,11 +14,11 @@
   /* ---------- 共用漸層（放在舞台 <defs>） ---------- */
   const DEFS = `
   <linearGradient id="gHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc2dc"/><stop offset=".3" stop-color="#ff98c3"/><stop offset=".7" stop-color="#e65f97"/><stop offset="1" stop-color="#b53a72"/></linearGradient>
-  <linearGradient id="gHairB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a5878"/><stop offset=".35" stop-color="#3b3852"/><stop offset="1" stop-color="#16141f"/></linearGradient>
+  <linearGradient id="gHairB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a6a46"/><stop offset=".35" stop-color="#6e4630"/><stop offset="1" stop-color="#3e2618"/></linearGradient>
   <linearGradient id="gSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4ea"/><stop offset=".6" stop-color="#ffe3d2"/><stop offset="1" stop-color="#f7c9b4"/></linearGradient>
   <radialGradient id="gFaceShade" cx=".5" cy=".42" r=".62"><stop offset=".62" stop-color="#d27f6c" stop-opacity="0"/><stop offset="1" stop-color="#c06a5c" stop-opacity=".38"/></radialGradient>
   <radialGradient id="gIris" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#9a3d75"/><stop offset=".45" stop-color="#e48ab4"/><stop offset=".85" stop-color="#ffc4dc"/><stop offset="1" stop-color="#7a2e5e"/></radialGradient>
-  <radialGradient id="gIrisB" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#8a5210"/><stop offset=".45" stop-color="#f2b84a"/><stop offset=".85" stop-color="#ffe49a"/><stop offset="1" stop-color="#7a4a10"/></radialGradient>
+  <radialGradient id="gIrisB" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#1a3a8a"/><stop offset=".45" stop-color="#4f86e0"/><stop offset=".85" stop-color="#a9d0ff"/><stop offset="1" stop-color="#e8f4ff"/></radialGradient>
   <linearGradient id="gCloth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".35" stop-color="#fff" stop-opacity=".12"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
   <linearGradient id="gShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>`;
 
@@ -56,7 +56,7 @@
       const lx = cx + look * .6, ir = c.small ? 6 : (boy ? 11 : 12.6), ih = c.small ? 7 : h * .9;
       o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, boy ? 15 : 16.5, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
         E(cx, ey - h * .55, 15, h * .5, boy ? '#c9b8a0' : '#cdb4cc', 'opacity=".5"') +
-        E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#7a4a0c' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
+        E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#1d3a7a' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
         E(lx, ey - ih * .3, ir * .95, ih * .5, boy ? '#5a2e00' : '#3a1030', 'opacity=".3"') + S(`M${lx} ${ey + 1} L${lx - ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx + ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx - ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx + ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx - ir * .5} ${ey + ih * .9} M${lx} ${ey + 1} L${lx + ir * .5} ${ey + ih * .9}`, '#fff', .8, 'opacity=".28"') +
         E(lx, ey + ih * .55, ir * .72, ih * .34, '#fff', 'opacity=".38"') +
         E(lx, ey + 2, c.small ? 3.2 : 5.4, c.small ? 3.6 : h * .44, '#26101e') +
@@ -234,13 +234,12 @@
     s += P(FACE_B, 'url(#gSkin)', LINE) + P(FACE_B, 'url(#gFaceShade)') + S('M-40 62 Q0 82 40 62', '#b9806a', 2, 'opacity=".25"');
     s += face(mood, 'boy');
     s += '<g>';
-    const HS = 'stroke="#2a1a2e" stroke-opacity=".8" stroke-width="2.4" stroke-linejoin="round"';
-    s += S('M-2 -88 C-14 -104 -6 -120 14 -124', '#2b2a46', 5, 'stroke-linecap="round"') + S('M-2 -88 C-14 -104 -6 -120 14 -124', '#6a74b0', 1.6, 'opacity=".5" stroke-linecap="round"');
-    s += P('M-64 -4 C-74 -60 -42 -92 0 -92 C42 -92 74 -60 64 -4 L58 -26 L56 -8 L47 -34 L40 -22 L32 -44 L20 -30 L8 -50 L-2 -32 L-12 -48 L-22 -28 L-32 -44 L-40 -24 L-48 -36 L-56 -8 L-58 -26Z', 'url(#gHairB)', HS) +
-      P('M-62 -14 L-67 22 L-57 6 L-52 -12Z M62 -14 L67 22 L57 6 L52 -12Z', 'url(#gHairB)', HS) +
-      S('M-36 -78 Q-6 -92 30 -80', '#fff', 4, 'stroke-opacity=".32" stroke-linecap="round"') +
-      S('M-50 -60 Q-52 -40 -52 -20 M-26 -84 Q-30 -62 -30 -38 M0 -90 Q-4 -66 -2 -40 M26 -84 Q24 -62 20 -38 M52 -60 Q52 -40 52 -20', '#6a74b0', 2, 'opacity=".55"') +
-      S('M-40 -30 Q-30 -22 -20 -32 M10 -32 Q24 -22 34 -34', '#16141f', 2.2, 'opacity=".18"');
+    const HS = 'stroke="#2e1a10" stroke-opacity=".75" stroke-width="2.4" stroke-linejoin="round"';
+    s += P('M-64 -4 C-74 -60 -42 -92 0 -92 C42 -92 74 -60 64 -4 C62 -12 58 -20 54 -26 C52 -20 46 -14 40 -22 C40 -30 34 -38 24 -44 C22 -34 16 -26 8 -22 C6 -32 -2 -40 -12 -46 C-14 -36 -22 -28 -32 -24 C-36 -32 -42 -38 -50 -40 C-52 -26 -58 -14 -64 -4Z', 'url(#gHairB)', HS) +
+      P('M-62 -14 C-68 4 -66 18 -60 26 C-56 14 -54 0 -52 -12Z M62 -14 C68 4 66 18 60 26 C56 14 54 0 52 -12Z', 'url(#gHairB)', HS) +
+      S('M-36 -80 Q-6 -92 30 -82', '#fff', 4, 'stroke-opacity=".28" stroke-linecap="round"') +
+      S('M-46 -62 Q-52 -48 -50 -34 M-22 -82 Q-28 -64 -26 -46 M4 -90 Q-2 -66 4 -34 M28 -84 Q30 -64 24 -44 M52 -62 Q54 -46 50 -32', '#c89a70', 2, 'opacity=".45"') +
+      S('M-40 -34 Q-30 -26 -20 -36 M12 -34 Q24 -26 34 -38', '#2a160c', 2, 'opacity=".16"');
     s += '</g>';
     return s;
   }
