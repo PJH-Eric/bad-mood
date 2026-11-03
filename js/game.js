@@ -61,6 +61,8 @@
 
   /* ---------- 對話框（打字機） ---------- */
   let typing = null, nextCb = null;
+  const TONES = { angry: ['哼！', '你給我聽好——', '我再問一次：', '（瞪著你）'], sulk: ['……（鼓著臉）', '（扯著你的袖子）', '欸……', '（別過頭）'], cold: ['……', '（淡淡地）', '我只問一次：', '（看著遠方）'], sad: ['（低著頭）', '（小聲）', '……欸，', '（吸了吸鼻子）'], shock: ['（瞪大眼睛）', '等一下！', '咦？', '（突然轉頭）'] };
+  const toneOf = (m) => { const a = TONES[m]; return a ? a[Math.random() * a.length | 0] + ' ' : ''; };
   function say(name, text) {
     return new Promise((res) => {
       $('nameTag').textContent = name; $('nameTag').style.display = name ? '' : 'none';
@@ -136,6 +138,18 @@
       shuffleWith(own, r).slice(0, na).forEach((q) => list.splice(Math.max(2, list.length - 1 - (r() * 3 | 0)), 0, q));
       while (list.length > total) { const cand = list.map((q, i) => i).filter((i) => i > 0 && !list[i].absurd); list.splice(cand[r() * cand.length | 0], 1); }
     }
+    /* 經典問題：每關穿插 1～2 題；同一題的正確答案依她當下的心情而異（心情每次隨機） */
+    if (G.CLASSIC && G.CLASSIC.length) {
+      const nC = 1 + (idx % 2), CL2 = G.CLASSIC; let picks;
+      if (rand) { const seen = new Set(state.seen || []); picks = shuffleWith(CL2.filter((q) => !seen.has(q.q)).concat(CL2.filter((q) => seen.has(q.q))), r).slice(0, nC); state.seen = (state.seen || []).concat(picks.map((q) => q.q)).slice(-Math.floor((G.LEVELS.length * 9 + CL2.length) * .7)); save(); }
+      else { picks = []; for (let k = 0; k < nC; k++) picks.push(CL2[(idx * 3 + k * 7) % CL2.length]); }
+      picks.forEach((q) => {
+        const cand = list.map((x, i) => i).filter((i) => i > 0 && !list[i].absurd && !list[i].classic);
+        if (cand.length) list.splice(cand[r() * cand.length | 0], 1);
+        list.splice(1 + (r() * Math.max(1, list.length - 1) | 0), 0, q);
+      });
+    }
+    list = list.map((q) => { if (!q.moodV) return q; const v = q.moodV[Math.random() * q.moodV.length | 0]; return Object.assign({}, q, v); });
     const bridges = list.map(() => (r() < .5 ? r() * G.BRIDGES.length | 0 : -1));
     // 離譜選項：所有關卡都會混入（越後面越離譜、越常出現、有時一題塞兩個）
     const tier = idx < 5 ? 0 : idx < 15 ? 1 : 2;
@@ -156,6 +170,7 @@
       return { q, opts, bridge: qi > 0 ? bridges[qi] : -1 };
     });
   }
+  G._bq = buildQuestions;
   const CL = () => (state.mode === 'rand' ? state.clearedR : state.cleared);
   const FK = () => (state.mode === 'rand' ? 'failsR' : 'fails');
 
@@ -276,7 +291,7 @@
         [...dots.children].forEach((d, i) => { d.className = i < qi ? 'on' : i === qi ? 'cur' : ''; });
         if (state.chat && qs[qi].bridge >= 0) { setBoy('normal'); setGirl('cold'); for (const bt of G.BRIDGES[qs[qi].bridge]) await beat(bt, chk); }
         setGirl(q.mood); setBoy(['angry', 'shock', 'cold', 'sad'].includes(q.mood) ? 'nervous' : 'normal');
-        await say(state.name, q.q); chk();
+        await say(state.name, (q.classic ? toneOf(q.mood) : '') + q.q); chk();
         const qStart = Date.now(); const r = await ask(opts, Math.round(limitFor(idx) * timeMul())); chk(); $('choices').innerHTML = '';
         if (r.timeout) { await fail('……你怎麼都不說話！連回答都不願意是嗎！', qi); return; }
         await say('你', r.o.t); chk(); await sleep(650); chk();

@@ -1,7 +1,7 @@
 /* 題庫與美術完整性檢查：node tests/verify.js */
 global.window = {};
 const fs = require('fs'), path = require('path');
-for (const f of ['audio.js', 'sprites.js', 'art.js', 'art2.js', 'data-a.js', 'data-b.js', 'data-c.js', 'data-d.js', 'data-e.js']) new Function('window', fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8'))(window);
+for (const f of ['audio.js', 'sprites.js', 'art.js', 'art2.js', 'data-a.js', 'data-b.js', 'data-c.js', 'data-d.js', 'data-e.js', 'data-f.js']) new Function('window', fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8'))(window);
 const { LEVELS, Art } = window.GAME;
 const MOODS = ['angry', 'sulk', 'sad', 'shock', 'cold', 'happy', 'blush', 'normal', 'nervous'];
 let err = 0; const bad = (m) => { console.log('✗', m); err++; };
@@ -27,7 +27,19 @@ for (const m of MOODS) { try { Art.girl(m, 'cafe'); Art.boy(m); } catch (e) { ba
 for (const s of Art.scenes) { try { if (Art.scene(s).length < 200) bad('場景過短 ' + s); } catch (e) { bad('場景失敗 ' + s + ' ' + e.message); } }
 for (const s of Art.scenes) { try { Art.extras(s); } catch (e) { bad('場景細節失敗 ' + s + ' ' + e.message); } }
 for (const m of MOODS) { try { Art.fx(m, 'girl'); Art.fx(m, 'boy'); } catch (e) { bad('特效失敗 ' + m); } }
-console.log(err ? `失敗 ${err} 項` : '全部通過');
+// 經典題（心情版本）檢查
+{
+  const C = window.GAME.CLASSIC || []; if (C.length < 30) bad('經典題不足 ' + C.length);
+  C.forEach((q) => {
+    if (!q.q || !q.moodV || q.moodV.length < 2) return bad('經典題缺心情版本 ' + q.q);
+    const goods = new Set();
+    q.moodV.forEach((v) => { goods.add(v.good[0]); if (v.bad.length !== 3 || v.bad.includes(v.good[0]) || !v.fail || !v.ok) bad('經典題格式 ' + q.q); });
+    if (goods.size < q.moodV.length) bad('經典題各心情答案相同 ' + q.q);
+    if (new Set(q.moodV.map((v) => v.mood)).size !== q.moodV.length) bad('經典題心情重複 ' + q.q);
+  });
+  console.log('經典題', C.length, '題（心情版本）');
+}
+ console.log(err ? `失敗 ${err} 項` : '全部通過');
 process.exit(err ? 1 : 0);
 
 // 荒謬題庫檢查
