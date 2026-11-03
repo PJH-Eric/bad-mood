@@ -43,9 +43,10 @@
 
   /* ---------- 繪圖 ---------- */
   let sceneKey = 'home';
+  setTimeout(() => { if (G.Lang) G.Lang.onChange.push(() => { Object.keys(bgCache).forEach((k) => delete bgCache[k]); setScene(sceneKey); }); }, 0);
   function setScene(k) { sceneKey = k; $('bg').innerHTML = `<image href="${bgImage(k)}" x="0" y="0" width="960" height="540" preserveAspectRatio="none"/>`; $('bgx').innerHTML = Art.extras(k); setGirl('normal'); setBoy('normal'); }
   const bgCache = {};
-  function bgImage(k) { return bgCache[k] || (bgCache[k] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(Art.staticSvg(k))); }
+  function bgImage(k) { return bgCache[k] || (bgCache[k] = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(G.Lang ? G.Lang.tx(Art.staticSvg(k)) : Art.staticSvg(k))); }
   function setGirl(m) { $('girlG').innerHTML = `<g class="breath">${Art.girl(m, sceneKey)}</g>`; fxG.girl = Art.fx(m, 'girl'); $('fxB').innerHTML = Art.fxBack(m, 'girl'); drawFx(); $('moodTint').setAttribute('opacity', m === 'angry' ? '.16' : '0'); }
   function setBoy(m) { $('boyG').innerHTML = `<g class="breath" style="animation-delay:-1.4s">${Art.boy(m)}</g>`; fxG.boy = Art.fx(m, 'boy'); drawFx(); }
   const fxG = { girl: '', boy: '' };
@@ -137,13 +138,14 @@
     // 離譜選項：所有關卡都會混入（越後面越離譜、越常出現、有時一題塞兩個）
     const tier = idx < 5 ? 0 : idx < 15 ? 1 : 2;
     return list.map((q, qi) => {
-      const good = rand ? q.good[r() * q.good.length | 0] : q.good[0];
+      let good = rand ? q.good[r() * q.good.length | 0] : q.good[0];
+      if (G.TWIST && !q.absurd && r() < .3 + idx * .02) { const tp = G.TWIST[Math.min(2, tier)], tw = tp[r() * tp.length | 0]; good = good + tw; }
       const nb = Math.min(q.bad.length + 1, rand ? [2, 2, 3, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
       const wrong = shuffleWith(q.bad, r).slice(0, nb);
       if (G.ABS_BAD) {
-        const nAbs = q.absurd ? (idx >= 8 && r() < .5 ? 1 : 0) : (r() < .35 + idx * .025 ? 1 + (idx >= 10 && r() < .5 ? 1 : 0) : 0);
+        const nAbs = q.absurd ? (idx >= 4 && r() < .6 ? 1 : 0) : (r() < .5 + idx * .025 ? 1 + (idx >= 10 && r() < .5 ? 1 : 0) : 0);
         for (let k = 0; k < nAbs; k++) {
-          const lvl = Math.min(2, tier + (r() < .25 ? 1 : 0)), pool = G.ABS_BAD[lvl], pick = pool[r() * pool.length | 0];
+          const lvl = Math.min(2, tier + (r() < .4 ? 1 : 0)), pool = G.ABS_BAD[lvl], pick = pool[r() * pool.length | 0];
           if (wrong.includes(pick)) continue;
           if (wrong.length >= 3) wrong[r() * wrong.length | 0] = pick; else wrong.push(pick);
         }
