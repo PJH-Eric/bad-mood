@@ -44,7 +44,7 @@
   $('defs').innerHTML = Art.defs;
 
   /* ---------- 畫面切換 ---------- */
-  const SCRS = ['scrTitle', 'scrSelect', 'scrIntro', 'scrOver', 'scrClear', 'scrEnd', 'scrPause', 'scrSet', 'scrHow', 'scrConfirm'];
+  const SCRS = ['scrAch', 'scrTitle', 'scrSelect', 'scrIntro', 'scrOver', 'scrClear', 'scrEnd', 'scrPause', 'scrSet', 'scrHow', 'scrConfirm'];
   function show(id) { SCRS.forEach((s) => $(s).classList.toggle('hidden', s !== id)); }
   function hideAll() { show(null); }
   function inGameUI(on) { ['hud', 'dlg'].forEach((i) => $(i).classList.toggle('hidden', !on)); if (!on) { $('choices').innerHTML = ''; } }
@@ -104,13 +104,20 @@
     /* 越後面的關卡，混入越多荒謬題（第 4 關起 1 題，之後每 4 關多 1 題） */
     const A = G.ABSURD || {}, own = A[idx] || [];
     const ap = []; for (let k = 3; k <= idx; k++) (A[k] || []).forEach((q) => ap.push(q));
-    const na = idx < 3 ? 0 : Math.min(own.length, 1 + Math.floor((idx - 3) / 4));
+    const na = idx < 3 ? 0 : Math.min(own.length, 1 + Math.floor((idx - 3) / 4) + (idx >= 14 ? 1 : 0) + (idx >= 17 ? 1 : 0));
     const total = lv.fixed.length + lv.pick;
     let list;
     if (rand) {
-      const abs = shuffleWith(ap, r).slice(0, na);
-      list = shuffleWith(lv.fixed.concat(lv.pool), r).slice(0, total - abs.length);
-      abs.forEach((q) => list.splice(r() * (list.length + 1) | 0, 0, q));
+      // 全隨機：從整個題庫（所有關卡）抽，並避開最近出現過的題目，所以不會一直重複
+      const all = []; LV.forEach((l) => l.fixed.concat(l.pool).forEach((q) => all.push(q)));
+      const seen = new Set(state.seen || []);
+      const abs = shuffleWith(ap.filter((q) => !seen.has(q.q)).concat(ap.filter((q) => seen.has(q.q))), r).slice(0, na);
+      let cand = all.filter((q) => !seen.has(q.q));
+      if (cand.length < total) { state.seen = []; cand = all; }
+      const base = shuffleWith(cand, r).slice(0, total - abs.length);
+      list = base; abs.forEach((q) => list.splice(r() * (list.length + 1) | 0, 0, q));
+      state.seen = (state.seen || []).concat(list.map((q) => q.q)).slice(-Math.floor(all.length * .7));
+      save();
     } else {
       list = lv.fixed.slice();
       shuffleWith(lv.pool, r).slice(0, Math.max(0, lv.pick - na)).forEach((q) => list.splice(1 + (r() * list.length | 0), 0, q));
@@ -132,8 +139,47 @@
   const CL = () => (state.mode === 'rand' ? state.clearedR : state.cleared);
   const FK = () => (state.mode === 'rand' ? 'failsR' : 'fails');
 
+  /* ---------- 成就與結局 ---------- */
+  const ACH = [
+    ['first', '初次消氣', '通過任何一個關卡'], ['ten', '十關達人', '累計通過 10 個關卡（任一模式）'], ['all', '讀心大師', '通過全部 20 關'],
+    ['flawless', '一次過關', '一次就通過一個關卡（中途沒有 GAME OVER）'], ['absurd', '荒謬翻譯機', '累計答對 10 題荒謬題'], ['fail10', '愈挫愈勇', '累計踩雷 10 次'],
+    ['love', '甜蜜滿分', '閒聊結束時好感達到最高'], ['rand', '隨機征服者', '在全隨機模式通關全部 20 關'], ['quick', '秒答', '在 2 秒內答對一題'], ['ending4', '收集家', '解鎖全部 4 種結局'],
+  ];
+  const ENDINGS = { true: '真・結局　讀心之戀', good: '幸福結局　高級男友', normal: '平凡結局　努力的男友', brave: '勇者結局　靠毅力的誠意' };
+  function unlock(id) {
+    state.ach = state.ach || {}; if (state.ach[id]) return; state.ach[id] = 1; save();
+    const a = ACH.find((x) => x[0] === id); if (!a) return;
+    let t = $('achToast'); if (!t) { t = document.createElement('div'); t.id = 'achToast'; $('stage').appendChild(t); }
+    t.textContent = '🏆 成就解鎖：' + a[1]; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); Au.play('clear');
+    if (Object.keys(state.ach).filter((k) => k !== 'ending4').length >= 0 && Object.keys(state.endings || {}).length >= 4) unlock('ending4');
+  }
+  function renderAch() {
+    const box = $('achList'); box.innerHTML = ''; const got = state.ach || {};
+    ACH.forEach(([id, name, desc]) => { const d = document.createElement('div'); d.className = 'achItem' + (got[id] ? ' on' : ''); d.innerHTML = `<b>${got[id] ? '🏆' : '🔒'} ${name}</b><span>${desc}</span>`; box.appendChild(d); });
+    const e = state.endings || {}; const eb = document.createElement('div'); eb.className = 'achEnd';
+    eb.innerHTML = '<b>結局收集 ' + Object.keys(e).length + ' / 4</b>' + Object.keys(ENDINGS).map((k) => `<span class="${e[k] ? 'on' : ''}">${e[k] ? ENDINGS[k] : '？？？？'}</span>`).join('');
+    box.appendChild(eb);
+  }
+  (function mkAch() {
+    const scr = document.createElement('div'); scr.className = 'scr hidden'; scr.id = 'scrAch';
+    scr.innerHTML = '<div class="panel wide"><div class="panelHead"><button class="gbtn small" id="achBack">‹ 返回</button><h2>成就與結局</h2><span style="min-width:80px"></span></div><div id="achList"></div></div>';
+    $('stage').appendChild(scr);
+    const btn = document.createElement('button'); btn.className = 'gbtn small'; btn.id = 'btnAch'; btn.textContent = '成就'; btn.type = 'button';
+    const ref = $('btnSet'); if (ref && ref.parentNode) ref.parentNode.insertBefore(btn, ref);
+    btn.onclick = () => { Au.play('click'); renderAch(); show('scrAch'); };
+    scr.querySelector('#achBack').onclick = () => { Au.play('click'); show('scrTitle'); };
+  })();
+
   /* ---------- 作答 ---------- */
-  let runId = 0, cur = null, paused = false;
+  let runId = 0, cur = null, paused = false, aff = 0, levelFail = false;
+  function affShow(on) {
+    let e = $('affChip');
+    if (!e) { e = document.createElement('div'); e.id = 'affChip'; $('hud').appendChild(e); }
+    e.style.display = on ? '' : 'none'; if (!on) return;
+    const v = Math.max(-3, Math.min(4, aff)); e.textContent = '好感 ' + '♥'.repeat(Math.max(0, v + 3)) + '♡'.repeat(7 - Math.max(0, v + 3));
+    e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump');
+  }
+  const timeMul = () => (aff >= 2 ? 1.25 : aff <= -2 ? .85 : 1);
   function ask(opts, sec) {
     return new Promise((res) => {
       camTo(50, 1, .8); const box = $('choices'); box.innerHTML = '';
@@ -180,7 +226,7 @@
     const tok = ++runId, chk = () => { if (tok !== runId) throw CANCEL; };
     const lv = LV[idx], qs = buildQuestions(lv, idx, state.mode); cur = { idx, qs, qi: 0, opts: null };
     try {
-      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene); applyTheme(lv.scene); camTo(50, 1, 0);
+      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene); applyTheme(lv.scene); camTo(50, 1, 0); Au.setScene(lv.scene);
       $('lvTag').textContent = `第 ${idx + 1} 關 ‧ ${lv.place} ‧ ${state.mode === 'rand' ? '全隨機' : '固定題'}`;
       const dots = $('dots'); dots.innerHTML = qs.map(() => '<i></i>').join('');
       $('timerBar').style.transform = 'scaleX(1)'; $('dlgText').textContent = ''; $('nameTag').style.display = 'none';
@@ -188,17 +234,19 @@
       $('introNo').textContent = `STAGE ${String(idx + 1).padStart(2, '0')}`; $('introPlace').textContent = lv.place; $('introTitle').textContent = lv.title;
       show('scrIntro'); await sleep(1500); chk(); hideAll();
       await say('旁白', lv.intro); chk(); await waitNext(); chk();
-      if (state.chat) await prelude(idx, chk);
+      aff = 0; levelFail = false; affShow(false); if (state.chat) await prelude(idx, chk);
       for (let qi = 0; qi < qs.length; qi++) {
         cur.qi = qi; const { q, opts } = qs[qi];
         [...dots.children].forEach((d, i) => { d.className = i < qi ? 'on' : i === qi ? 'cur' : ''; });
         if (state.chat && qs[qi].bridge >= 0) { setBoy('normal'); setGirl('cold'); for (const bt of G.BRIDGES[qs[qi].bridge]) await beat(bt, chk); }
         setGirl(q.mood); setBoy(['angry', 'shock', 'cold', 'sad'].includes(q.mood) ? 'nervous' : 'normal');
         await say(state.name, q.q); chk();
-        const r = await ask(opts, limitFor(idx)); chk(); $('choices').innerHTML = '';
+        const qStart = Date.now(); const r = await ask(opts, Math.round(limitFor(idx) * timeMul())); chk(); $('choices').innerHTML = '';
         if (r.timeout) { await fail('……你怎麼都不說話！連回答都不願意是嗎！', qi); return; }
         await say('你', r.o.t); chk(); await sleep(650); chk();
         if (!r.o.ok) { await fail(q.fail, qi); return; }
+        if (q.absurd) { state.absOK = (state.absOK || 0) + 1; if (state.absOK >= 10) unlock('absurd'); }
+        if (Date.now() - qStart < 2000) unlock('quick');
         Au.play('good'); setBoy('happy'); setGirl(Math.random() < .4 ? 'blush' : 'normal');
         await say(state.name, q.ok || OKS[Math.random() * OKS.length | 0]); chk(); await waitNext(); chk();
       }
@@ -209,23 +257,40 @@
     async function fail(line, qi) {
       setGirl('angry'); setBoy('shock'); Au.play('bad'); $('stage').classList.remove('shake'); void $('stage').offsetWidth; $('stage').classList.add('shake');
       await say(state.name, line); chk(); await sleep(1100); chk();
-      state[FK()]++; save(); inGameUI(false);
+      state[FK()]++; state.lf = state.lf || {}; state.lf[state.mode + idx] = (state.lf[state.mode + idx] || 0) + 1; if (state.fails + state.failsR >= 10) unlock('fail10'); save(); inGameUI(false);
       $('overMsg').textContent = `${state.name}氣得轉身走了……\n（第 ${idx + 1} 關　${lv.place}　第 ${qi + 1} / ${qs.length} 題）`;
       show('scrOver');
     }
   }
 
+  function sceneAct(act) {
+    const slide = (id, x, ms) => actor(id, [{ translate: '0 0' }, { translate: x + 'px 0' }, { translate: '0 0' }], ms);
+    if (act === 'drink') { slide('boyG', 22, 900); slide('girlG', -6, 900); }
+    else if (act === 'turn') { slide('girlG', 14, 1100); actor('girlG', [{ rotate: '0deg' }, { rotate: '3deg' }, { rotate: '0deg' }], 1100); }
+    else if (act === 'walk') { slide('boyG', 16, 1400); slide('girlG', 16, 1400); }
+    else if (act === 'lean') slide('boyG', 24, 900);
+    else if (act === 'sit') { actor('boyG', [{ translate: '0 0' }, { translate: '0 8px' }, { translate: '0 0' }], 900); actor('girlG', [{ translate: '0 0' }, { translate: '0 8px' }, { translate: '0 0' }], 900); }
+  }
+  async function rapportRound(rd, chk) {
+    sceneAct(rd.act);
+    for (const bt of rd.pre) await beat(bt, chk);
+    setGirl('cold'); stageAct('g'); await say(state.name, '……'); chk();
+    const r = await ask(shuffle(rd.ask.map((a) => ({ t: a[0], ok: true, a }))), 0); chk(); $('choices').innerHTML = '';
+    await say('你', r.o.t); chk(); await sleep(500); chk();
+    const a = r.o.a; aff += a[1]; Au.play(a[1] > 0 ? 'good' : a[1] < 0 ? 'warn' : 'click');
+    setBoy(a[1] < 0 ? 'nervous' : 'normal'); setGirl(a[2]); stageAct('g'); affShow(true);
+    await say(state.name, a[3]); chk(); await waitNext(); chk();
+  }
   // 閒聊一行：n 旁白、b 你、g 她
   /* ---------- 閒聊時的鏡頭與角色動作 ---------- */
   function camTo(ox, sc, dur) { const a = $('art').style; a.transformOrigin = `${ox}% 58%`; a.transition = dur === 0 ? 'none' : `transform ${dur || 1.4}s ease-in-out`; a.transform = `scale(${sc})`; }
   function actor(id, kf, ms) { const g = $(id).firstElementChild; if (g && g.animate) g.animate(kf, { duration: ms, easing: 'ease-out' }); }
-  function stageAct(who) {
-    if (who === 'g') { camTo(72, 1.07); actor('girlG', [{ translate: '0 0' }, { translate: '0 -9px' }, { translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 520); actor('boyG', [{ translate: '0 0' }, { translate: '10px 0' }, { translate: '0 0' }], 700); }
-    else if (who === 'b') { camTo(28, 1.07); actor('boyG', [{ translate: '0 0' }, { translate: '0 -9px' }, { translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 520); actor('girlG', [{ translate: '0 0' }, { translate: '-10px 0' }, { translate: '0 0' }], 700); }
-    else camTo(50, 1.03, 1.8);
+  function stageAct(who) { // 只做一次很輕的點頭，不再每句都移動鏡頭
+    if (who === 'g') actor('girlG', [{ translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 420);
+    else if (who === 'b') actor('boyG', [{ translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 420);
   }
   function walkIn() {
-    camTo(50, 1.1, 0); void $('art').offsetWidth; camTo(50, 1.03, 2.2);
+    camTo(50, 1.05, 0); void $('art').offsetWidth; camTo(50, 1, 2.4);
     const step = (sx) => [{ translate: `${sx}px 0` }, { translate: `${sx * .7}px -9px` }, { translate: `${sx * .45}px 0` }, { translate: `${sx * .22}px -7px` }, { translate: '0 0' }];
     actor('boyG', step(-110), 1500); actor('girlG', step(110), 1500);
   }
@@ -249,11 +314,16 @@
     Au.play('good'); setBoy('happy'); setGirl(w.reply[i][0]); stageAct('g');
     await say(state.name, w.reply[i][1]); chk(); await waitNext(); chk();
     setBoy('normal');
+    const rounds = 1 + (idx >= 6 ? 1 : 0) + (idx >= 13 ? 1 : 0);
+    for (const rd of shuffle(G.RAPPORT || []).slice(0, rounds)) await rapportRound(rd, chk);
+    await sleep(300); chk(); if (aff >= rounds) unlock('love'); state.affSum = (state.affSum || 0) + aff; state.affN = (state.affN || 0) + 1; affShow(false);
   }
 
   async function winLevel(idx, tok) {
     const chk = () => { if (tok !== runId) throw CANCEL; };
     CL()[idx] = true; save(); Au.play('clear');
+    unlock('first'); if (CL().filter(Boolean).length + (state.mode === 'fixed' ? state.clearedR : state.cleared).filter(Boolean).length >= 10) unlock('ten');
+    if (!(state.lf && state.lf[state.mode + idx])) unlock('flawless');
     setGirl('happy'); setBoy('happy');
     if (idx === 19) { await endGame(tok); return; }
     await say(state.name, CLEARS[idx]); chk(); await waitNext(); chk();
@@ -264,9 +334,18 @@
 
   async function endGame(tok) {
     const chk = () => { if (tok !== runId) throw CANCEL; };
-    const L = ['……其實我知道，你每次都很努力在猜。', '（走近）我生氣，只是希望你多看看我。', '所以……謝謝你，一直沒有放棄。', '我也愛你。笨蛋。'];
+    const f0 = state[FK()], avg = (state.affN ? state.affSum / state.affN : 0);
+    const ek = f0 <= 5 && avg >= 1.2 ? 'true' : f0 <= 15 ? 'good' : f0 <= 30 ? 'normal' : 'brave';
+    const EL = {
+      true: ['……其實我知道，你每次都很努力在猜。', '（走近）我生氣，只是希望你多看看我。', '你記得我喜歡的口味、記得我不想說的話……全部都記得。', '所以，從今以後換我來猜你在想什麼。我愛你，笨蛋。'],
+      good: ['……其實我知道，你每次都很努力在猜。', '（走近）我生氣，只是希望你多看看我。', '所以……謝謝你，一直沒有放棄。', '我也愛你。笨蛋。'],
+      normal: ['……你真的有點遲鈍欸。', '不過，你每次都有回來找我。', '那就……原諒你這一次。', '下次要早點發現喔，笨蛋。'],
+      brave: ['……你到底踩了我幾百次地雷啊。', '可是你每一次都站起來繼續猜。', '那種誠意……我是看見了。', '好啦，原諒你。但是你要請我吃很多很多東西。'],
+    }[ek];
+    state.endings = state.endings || {}; state.endings[ek] = 1; save();
     setGirl('blush');
-    for (const l of L) { await say(state.name, l); chk(); await waitNext(); chk(); }
+    for (const l of EL) { await say(state.name, l); chk(); await waitNext(); chk(); }
+    unlock('all'); if (state.mode === 'rand') unlock('rand'); if (Object.keys(state.endings).length >= 4) unlock('ending4');
     setGirl('happy'); inGameUI(false);
     const f = state[FK()];
     const rank = f <= 5 ? '完美男友　讀心術大師' : f <= 15 ? '超懂她　高級男友' : f <= 30 ? '努力型男友　愈挫愈勇' : '靠毅力通關的勇者　她看見了你的誠意';
@@ -274,7 +353,8 @@
     $('endStat').innerHTML = '';
     const a = document.createElement('div'); a.append('累計踩雷（GAME OVER）次數：', Object.assign(document.createElement('b'), { textContent: f }), ' 次');
     const b = document.createElement('div'); b.append('評級：', Object.assign(document.createElement('b'), { textContent: rank }));
-    $('endStat').append(a, b);
+    const c3 = document.createElement('div'); c3.append('結局：', Object.assign(document.createElement('b'), { textContent: ENDINGS[ek] }), `（已收集 ${Object.keys(state.endings).length} / 4）`);
+    $('endStat').append(a, b, c3);
     show('scrEnd');
   }
 
@@ -299,7 +379,7 @@
     });
     $('selStat').textContent = `${done} / 20`;
   }
-  function toSelect() { applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
+  function toSelect() { Au.setScene('home'); applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
   /* ---------- 首頁：關鍵視覺輪播 ---------- */
   const TSHOW = [['home', 'sulk', 'nervous'], ['cafe', 'angry', 'nervous'], ['park', 'happy', 'happy'], ['beach', 'blush', 'normal'], ['rooftop', 'sad', 'nervous'], ['restaurant', 'cold', 'nervous'], ['onsen', 'sulk', 'normal'], ['mall', 'shock', 'shock']];
   let tIdx = 0, tTimer = 0;
@@ -320,7 +400,7 @@
   function titleStop() { clearInterval(tTimer); titleLayout(false); ['bg', 'bgx', 'girlG', 'boyG', 'fxG', 'fxB'].forEach((i) => ($(i).style.opacity = 1)); }
   (function petals() { const p = $('petals'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random() * 100 + '%'; d.style.animationDuration = 7 + Math.random() * 7 + 's'; d.style.animationDelay = -Math.random() * 12 + 's'; d.style.setProperty('--s', .6 + Math.random() * .9); p.appendChild(d); } })();
 
-  function toTitle() { applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
+  function toTitle() { Au.setScene('home'); applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
 
   /* ---------- 暫停／設定／說明／確認 ---------- */
   let setBack = 'scrTitle';

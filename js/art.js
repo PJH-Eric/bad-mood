@@ -53,7 +53,7 @@
       // 眼瞼裁切（生氣＝內側下壓；冷淡＝半睜）
       const inner = -s, topOuter = ey - h - 4 + lid * 0.4, topInner = ey - h - 4 + lid;
       const clip = `<clipPath id="${id}"><polygon points="${cx - 22},${s < 0 ? topOuter : topInner} ${cx + 22},${s < 0 ? topInner : topOuter} ${cx + 22},${ey + 30} ${cx - 22},${ey + 30}"/></clipPath>`;
-      const lx = cx + look * .6, ir = c.small ? 6 : 10.5, ih = c.small ? 7 : h * .9;
+      const lx = cx + look * .6, ir = c.small ? 6 : (boy ? 10.5 : 11.8), ih = c.small ? 7 : h * .9;
       o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, 15, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
         E(cx, ey - h * .55, 15, h * .5, boy ? '#c9b8a0' : '#cdb4cc', 'opacity=".5"') +
         E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#7a4a0c' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
@@ -154,7 +154,7 @@
   }
 
   /* ---------- 人物（比照參考圖：半寫實日系視覺小說比例、有手臂與手） ---------- */
-  const LINE = 'stroke="#3a2a3f" stroke-opacity=".45" stroke-width="2" stroke-linejoin="round"';
+  const LINE = 'stroke="#4a2438" stroke-opacity=".55" stroke-width="1.5" stroke-linejoin="round"';
   const FACE_G = 'M-58 -6 C-58 -50 -30 -72 0 -72 C30 -72 58 -50 58 -6 C58 38 34 72 0 82 C-34 72 -58 38 -58 -6Z';
   const FACE_B = 'M-56 -4 C-56 -48 -30 -70 0 -70 C30 -70 56 -48 56 -4 C56 36 38 70 0 78 C-38 70 -56 36 -56 -4Z';
   const arm = (d, c, w) => S(d, '#3a2a3f', w + 4, 'stroke-opacity=".4"') + S(d, c, w);
