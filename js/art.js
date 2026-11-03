@@ -62,7 +62,7 @@
         E(lx, ey + 2, c.small ? 3.2 : 5.4, c.small ? 3.6 : h * .44, '#26101e') +
         E(lx - 4.6, ey - h * .42, c.small ? 2.2 : 3.6, c.small ? 2.6 : 4.8, '#fff') + C(lx + 4.4, ey + h * .42, c.small ? 1.2 : 2, '#fff', 'opacity=".9"') + C(lx + 1.5, ey - h * .1, .9, '#fff', 'opacity=".8"') + '</g>';
       o += S(`M${cx - 14} ${ey - h - 5} Q${cx} ${ey - h - 11} ${cx + 14} ${ey - h - 4}`, dark, 1.3, 'opacity=".45"');
-      if (!boy) o += S(`M${cx - 10} ${ey + h + 3} Q${cx} ${ey + h + 6} ${cx + 10} ${ey + h + 3}`, dark, 1.2, 'opacity=".35"');
+      if (!boy) o += S(`M${cx - 10} ${ey + h + 3} Q${cx} ${ey + h + 6} ${cx + 10} ${ey + h + 3}`, dark, 1.2, 'opacity=".35"') + E(cx, ey - h - 3, 15, 4.5, '#e87fa8', 'opacity=".22"') + E(cx + s * 2, ey + h + 4, 11, 2.4, '#fff', 'opacity=".3"');
       // 上睫毛
       const lash = ey - h + (s < 0 ? lid * .4 : lid) * (s < 0 ? 1 : 0) + 0;
       o += S(`M${cx - 16} ${ey - h * .2 + (s < 0 ? lid * .3 : lid * .9) * 0.0} Q${cx} ${ey - h - 7 + lid * .5} ${cx + 16} ${ey - h * .1}`, dark, boy ? 3 : 4);
@@ -75,6 +75,7 @@
     o += S(`M-1.5 ${ey + 24} q1.5 3 3 0`, boy ? '#b9806a' : '#d99a86', 1.8, 'opacity=".7"') + S(`M-3 ${ey + 14} Q0 ${ey + 18} 3 ${ey + 14}`, '#fff', 1.6, 'opacity=".55"') + E(2, ey + 22, 2, 1.2, '#fff', 'opacity=".7"');
     // 嘴巴
     const my = boy ? 48 : 46;
+    if (!boy && ['smile', 'pout', 'wave', 'flat'].includes(c.mouth)) o += E(0, my + (c.mouth === 'smile' ? 5 : 2), 8, 3.4, '#f58aa0', 'opacity=".4"');
     switch (c.mouth) {
       case 'smile': o += S(`M-11 ${my} Q0 ${my + 11} 11 ${my}`, dark, 3) + (boy ? '' : S(`M-5 ${my + 7} Q0 ${my + 10} 5 ${my + 7}`, '#ff8fa0', 3, 'opacity=".55"') + S(`M-3 ${my + 8} Q0 ${my + 9.5} 3 ${my + 8}`, '#fff', 1.2, 'opacity=".6"')); break;
       case 'open': o += P(`M-15 ${my - 4} Q0 ${my + 28} 15 ${my - 4}Z`, '#c23a5b', `stroke="${dark}" stroke-width="2.5"`) + E(0, my + 8, 7, 4, '#ff8fa0'); break;
@@ -101,7 +102,7 @@
           S('M-26 124 Q0 100 26 124', c1, 4) + S('M-22 124 Q-40 112 -50 126', c1, 3) + S('M22 124 Q40 112 50 126', c1, 3);
         break;
       case 'formal':
-        o += P(sh, 'url(#gSkin)') + P('M-125 340 C-125 250 -108 210 -70 190 Q0 220 70 190 C108 210 125 250 125 340Z', c1) +
+        o += P(sh, 'url(#gSkin)') + P('M-112 216 C-114 168 -86 134 -26 112 L26 112 C86 134 114 168 112 216 Q0 242 -112 216Z', c2 || '#fff', 'stroke="#e0d6dc" stroke-width="2"') + P('M-26 112 Q0 146 26 112 Q0 126 -26 112Z', '#f3c2a6') + P('M-125 340 C-125 250 -108 210 -70 190 Q0 226 70 190 C108 210 125 250 125 340Z', c1) +
           S('M-70 190 Q0 220 70 190', c2 || '#fff', 3) + S('M-30 150 Q0 188 30 150', '#fff6d8', 4, 'stroke-dasharray="1 7"');
         break;
       case 'yukata':
@@ -120,7 +121,7 @@
         o += C(-5, 206, 4, '#fff6') + C(-5, 262, 4, '#fff6');
         break;
       case 'hoodie':
-        o += P(sh, c1) + P('M-52 124 Q0 196 52 124 L40 112 Q0 138 -40 112Z', '#000', 'opacity=".2"') + S('M-52 124 Q-60 60 -26 108 M52 124 Q60 60 26 108', c1, 12) +
+        o += P(sh, c1) + P('M-52 124 Q0 196 52 124 L40 112 Q0 138 -40 112Z', '#000', 'opacity=".2"') +
           S('M-14 150 V206 M14 150 V206', '#fff', 3) + P('M-34 270 H34 V320 H-34Z', '#000', 'opacity=".12"');
         break;
       case 'tee':
@@ -211,7 +212,7 @@
   function boy(mood) {
     const W = '#fdfdff', WL = 'stroke="#aeb4c6" stroke-width="2.2" stroke-linejoin="round"';
     let s = '';
-    s += '<g transform="translate(0 -20)">';
+    s += '<g transform="translate(0 -32) scale(.88 .98)">';
     s += P('M-108 340 C-108 210 -82 144 -22 126 L22 126 C82 144 108 210 108 340Z', W, WL);
     // 手臂：左手叉腰、右手自然下垂（短袖襯衫）
     s += arm('M-86 152 Q-122 190 -118 226', W, 38) + arm('M-118 226 Q-112 262 -62 276', 'url(#gSkin)', 22) + hand(-58, 276, .95);
@@ -225,7 +226,7 @@
     s += P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gShade)', 'opacity=".4"') + S('M-60 200 Q-40 250 -52 330 M60 200 Q44 250 52 330 M-20 250 Q-16 300 -22 336 M26 240 Q30 290 24 336', '#7a8098', 2.6, 'opacity=".28"');
     s += S('M-70 160 Q-60 190 -66 230 M70 160 Q60 190 66 230 M-30 190 Q-34 230 -30 280 M32 196 Q36 236 30 286 M-52 150 Q-30 140 -20 150', '#8c93ad', 1.8, 'opacity=".4"') +
       P('M-9 168 L9 168 L12 184 L-12 184Z', '#fff', 'opacity=".12"') + S('M-8 214 L10 218 M-9 244 L11 248 M-10 274 L12 278', '#fff', 2, 'opacity=".18"') +
-      C(-2, 150, 1.8, '#c4cadb') + C(-2, 164, 1.8, '#c4cadb') + P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gCloth)', 'opacity=".6"');
+      C(-2, 150, 1.8, '#c4cadb') + C(-2, 164, 1.8, '#c4cadb') + P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gCloth)', 'opacity=".32"');
     s += '</g>';
     s += E(-56, 6, 7, 13, '#ffd9c4', LINE) + E(56, 6, 7, 13, '#ffd9c4', LINE) + S('M-57 0 q-3 6 0 12 M57 0 q3 6 0 12', '#e49a86', 1.6, 'opacity=".6"');
     s += P(FACE_B, 'url(#gSkin)', LINE) + P(FACE_B, 'url(#gFaceShade)') + S('M-40 62 Q0 82 40 62', '#b9806a', 2, 'opacity=".25"');
