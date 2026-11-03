@@ -40,7 +40,7 @@
     const boy = who === 'boy';
     const dark = boy ? '#2b2233' : '#5a2d3d';
     const iris = boy ? 'url(#gIrisB)' : 'url(#gIris)';
-    const ex = boy ? 25 : 27, ey = boy ? 4 : 6, sx = boy ? .85 : 1.02;
+    const ex = boy ? 25 : 28, ey = boy ? 4 : 6, sx = boy ? .92 : 1.12;
     let o = '';
     // 臉頰紅暈
     if (c.blush) o += E(-39, ey + 25, 12, 7, '#ff8fa8', `opacity="${c.blush * (boy ? .6 : .8)}"`) + E(39, ey + 25, 12, 7, '#ff8fa8', `opacity="${c.blush * (boy ? .6 : .8)}"`);
@@ -53,8 +53,8 @@
       // 眼瞼裁切（生氣＝內側下壓；冷淡＝半睜）
       const inner = -s, topOuter = ey - h - 4 + lid * 0.4, topInner = ey - h - 4 + lid;
       const clip = `<clipPath id="${id}"><polygon points="${cx - 22},${s < 0 ? topOuter : topInner} ${cx + 22},${s < 0 ? topInner : topOuter} ${cx + 22},${ey + 30} ${cx - 22},${ey + 30}"/></clipPath>`;
-      const lx = cx + look * .6, ir = c.small ? 6 : (boy ? 10.5 : 11.8), ih = c.small ? 7 : h * .9;
-      o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, 15, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
+      const lx = cx + look * .6, ir = c.small ? 6 : (boy ? 11 : 12.6), ih = c.small ? 7 : h * .9;
+      o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, boy ? 15 : 16.5, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
         E(cx, ey - h * .55, 15, h * .5, boy ? '#c9b8a0' : '#cdb4cc', 'opacity=".5"') +
         E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#7a4a0c' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
         E(lx, ey - ih * .3, ir * .95, ih * .5, boy ? '#5a2e00' : '#3a1030', 'opacity=".3"') + S(`M${lx} ${ey + 1} L${lx - ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx + ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx - ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx + ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx - ir * .5} ${ey + ih * .9} M${lx} ${ey + 1} L${lx + ir * .5} ${ey + ih * .9}`, '#fff', .8, 'opacity=".28"') +
@@ -137,7 +137,7 @@
         break;
       default: // dress：青綠洋裝＋粉色口袋滾邊（比照截圖）
         o += P(sh, c1 || '#7fd1d8') + S('M0 118 V340', '#58b4bd', 3) + P('M-26 112 L0 150 L26 112 Q0 124 -26 112Z', '#fff') +
-          P('M-92 270 H-36 V330 H-92Z M36 270 H92 V330 H36Z', c2 || '#f78fb3', 'opacity=".95"') + C(-3, 170, 3.6, '#58b4bd') + C(-3, 210, 3.6, '#58b4bd');
+          R(-94, 266, 60, 64, c2 || '#f78fb3', 'rx="12" opacity=".95"') + R(34, 266, 60, 64, c2 || '#f78fb3', 'rx="12" opacity=".95"') + R(-88, 272, 48, 52, 'none', 'rx="9" stroke="#fff" stroke-width="2" stroke-dasharray="4 4" opacity=".8"') + R(40, 272, 48, 52, 'none', 'rx="9" stroke="#fff" stroke-width="2" stroke-dasharray="4 4" opacity=".8"') + S('M-26 114 Q-40 150 -38 200 M26 114 Q40 150 38 200', '#58b4bd', 2.5, 'opacity=".6"') + C(-3, 170, 3.6, '#58b4bd') + C(-3, 210, 3.6, '#58b4bd');
     }
     return o;
   }
@@ -171,6 +171,7 @@
     s += '<g transform="translate(0 -16)">';
     s += `<g transform="scale(.9 1)">${torsoGirl(o.kind, o.c1, o.c2)}</g>`;
     s += P('M-14 60 L14 60 L16 126 L-16 126Z', '#f3c2a6') + P('M-14 60 L14 60 L14 84 Q0 98 -14 84Z', '#000', 'opacity=".12"');
+    s += P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gShade)', 'opacity=".45"') + S('M-70 250 Q-52 290 -58 336 M70 250 Q52 290 58 336 M-30 300 Q-24 322 -28 340 M30 300 Q24 322 28 340', '#000', 2.5, 'opacity=".13"');
     // 手臂：抱胸（生氣／鬧彆扭／冷淡）或雙手交握在胸前（其他）
     if (mood === 'angry' || mood === 'sulk' || mood === 'cold') {
       s += arm('M-88 150 Q-104 226 -2 232', sleeve, 34) + arm('M88 150 Q104 238 4 248', sleeve, 34) + hand(-8, 232) + hand(10, 248);
@@ -179,13 +180,11 @@
     } else {
       s += arm('M-88 150 Q-108 226 -18 224', sleeve, 32) + arm('M88 150 Q108 226 18 224', sleeve, 32) + hand(-8, 220, .95) + hand(8, 220, .95);
     }
-    s += P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gShade)', 'opacity=".45"') + S('M-70 250 Q-52 290 -58 336 M70 250 Q52 290 58 336 M-30 300 Q-24 322 -28 340 M30 300 Q24 322 28 340', '#000', 2.5, 'opacity=".13"');
     s += S('M-84 160 Q-60 140 -30 132 M84 160 Q60 140 30 132', '#fff', 3, 'opacity=".35"') + S('M-76 200 Q-70 250 -80 300 M76 200 Q70 250 80 300', '#000', 2, 'opacity=".12"') + P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gCloth)', 'opacity=".7"');
     s += '</g>';
     s += E(-58, 8, 7, 13, '#ffd9c4', LINE) + E(58, 8, 7, 13, '#ffd9c4', LINE) + S('M-59 2 q-3 6 0 12 M59 2 q3 6 0 12', '#e49a86', 1.6, 'opacity=".6"');
     s += P(FACE_G, 'url(#gSkin)', LINE) + P(FACE_G, 'url(#gFaceShade)', 'opacity=".6"') + P('M-30 70 Q0 88 30 70 Q0 80 -30 70Z', '#c06a5c', 'opacity=".22"');
     s += E(-34, 30, 20, 12, '#fff', 'opacity=".18"') + E(34, 30, 20, 12, '#fff', 'opacity=".18"');
-    s += P('M-60 -18 Q0 6 60 -18 Q56 -46 0 -52 Q-56 -46 -60 -18Z', '#b8467a', 'opacity=".2"');
     s += face(mood, 'girl');
     s += P('M-60 -30 C-86 30 -82 130 -68 214 C-54 160 -52 80 -54 20Z', hair, LINE) + P('M60 -30 C86 30 82 130 68 214 C54 160 52 80 54 20Z', hair, LINE);
     s += P('M-66 -14 C-68 -90 -24 -110 4 -110 C40 -110 72 -88 66 -14 C60 -46 46 -66 26 -76 C30 -54 18 -34 4 -30 C0 -54 -18 -68 -38 -64 C-56 -56 -62 -36 -66 -14Z', hair, LINE) +
@@ -200,6 +199,10 @@
       S('M-80 -40 Q-96 -56 -90 -78 M78 -44 Q98 -52 94 -80 M-30 -108 Q-40 -126 -28 -134', '#ff98c3', 2, 'opacity=".8"') +
       S('M-72 100 Q-80 150 -72 200 M72 100 Q80 150 72 200', '#fff', 2.2, 'opacity=".35"') +
       S('M-76 30 Q-84 90 -78 150 M76 30 Q84 90 78 150', '#7a2450', 3, 'opacity=".25"');
+    s += P('M-62 -10 C-76 40 -76 120 -68 200 C-62 150 -60 90 -58 30Z', '#d6447f', 'opacity=".28"') + P('M62 -10 C76 40 76 120 68 200 C62 150 60 90 58 30Z', '#d6447f', 'opacity=".28"') +
+      S('M-56 40 Q-64 110 -60 190 M56 40 Q64 110 60 190 M-46 60 Q-52 120 -48 196 M46 60 Q52 120 48 196', '#fff', 1.8, 'opacity=".4"') +
+      S('M-50 -64 Q-20 -90 10 -92 M-60 -40 Q-36 -74 -8 -86', '#fff', 3, 'opacity=".28"') +
+      P('M-10 -70 Q4 -40 -4 -22 Q-14 -44 -10 -70Z M30 -66 Q40 -40 32 -22 Q24 -42 30 -66Z', '#e85d9c', 'opacity=".35"');
     s += C(46, -64, 6.5, '#ffd54a', 'stroke="#e0a61a" stroke-width="2"') + C(46, -64, 2.4, '#fff');
     s += accessory(o.acc);
     return s;
