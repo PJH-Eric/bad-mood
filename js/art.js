@@ -51,10 +51,15 @@
       // 眼瞼裁切（生氣＝內側下壓；冷淡＝半睜）
       const inner = -s, topOuter = ey - h - 4 + lid * 0.4, topInner = ey - h - 4 + lid;
       const clip = `<clipPath id="${id}"><polygon points="${cx - 22},${s < 0 ? topOuter : topInner} ${cx + 22},${s < 0 ? topInner : topOuter} ${cx + 22},${ey + 30} ${cx - 22},${ey + 30}"/></clipPath>`;
+      const lx = cx + look * .6, ir = c.small ? 6 : 10.5, ih = c.small ? 7 : h * .9;
       o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, 15, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
-        E(cx + look * .6, ey + 1, c.small ? 6 : 10.5, c.small ? 7 : h * .88, iris) +
-        E(cx + look * .6, ey + 2, c.small ? 3.5 : 6, c.small ? 4 : h * .42, '#2a1020') +
-        C(cx + look * .6 - 4, ey - h * .35, c.small ? 2.4 : 4.4, '#fff') + C(cx + look * .6 + 4, ey + h * .35, 2, '#fff', 'opacity=".85"') + '</g>';
+        E(cx, ey - h * .55, 15, h * .5, boy ? '#c9b8a0' : '#cdb4cc', 'opacity=".5"') +
+        E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#7a4a0c' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
+        E(lx, ey + ih * .5, ir * .7, ih * .38, '#fff', 'opacity=".3"') +
+        E(lx, ey + 2, c.small ? 3.2 : 5.4, c.small ? 3.6 : h * .44, '#26101e') +
+        E(lx - 4.6, ey - h * .42, c.small ? 2.2 : 3.6, c.small ? 2.6 : 4.8, '#fff') + C(lx + 4.4, ey + h * .42, c.small ? 1.2 : 2, '#fff', 'opacity=".9"') + C(lx + 1.5, ey - h * .1, .9, '#fff', 'opacity=".8"') + '</g>';
+      o += S(`M${cx - 14} ${ey - h - 5} Q${cx} ${ey - h - 11} ${cx + 14} ${ey - h - 4}`, dark, 1.3, 'opacity=".45"');
+      if (!boy) o += S(`M${cx - 10} ${ey + h + 3} Q${cx} ${ey + h + 6} ${cx + 10} ${ey + h + 3}`, dark, 1.2, 'opacity=".35"');
       // 上睫毛
       const lash = ey - h + (s < 0 ? lid * .4 : lid) * (s < 0 ? 1 : 0) + 0;
       o += S(`M${cx - 16} ${ey - h * .2 + (s < 0 ? lid * .3 : lid * .9) * 0.0} Q${cx} ${ey - h - 7 + lid * .5} ${cx + 16} ${ey - h * .1}`, dark, boy ? 3 : 4);
@@ -63,6 +68,7 @@
     // 眉毛
     const [bi, bo] = c.brow, by = boy ? 3 : 0;
     for (const s of [-1, 1]) o += S(`M${s * 11} ${bi + by - 1} Q${s * 26} ${(bi + bo) / 2 - 7 + by} ${s * 40} ${bo + by}`, boy ? '#1a1626' : '#a24a76', boy ? 5 : 3.5);
+    o += S(`M-1.5 ${ey + 24} q1.5 3 3 0`, boy ? '#b9806a' : '#d99a86', 1.8, 'opacity=".7"');
     // 嘴巴
     const my = boy ? 48 : 46;
     switch (c.mouth) {
@@ -148,13 +154,14 @@
   const FACE_G = 'M-58 -6 C-58 -50 -30 -72 0 -72 C30 -72 58 -50 58 -6 C58 38 34 72 0 82 C-34 72 -58 38 -58 -6Z';
   const FACE_B = 'M-56 -4 C-56 -48 -30 -70 0 -70 C30 -70 56 -48 56 -4 C56 36 38 70 0 78 C-38 70 -56 36 -56 -4Z';
   const arm = (d, c, w) => S(d, '#3a2a3f', w + 4, 'stroke-opacity=".4"') + S(d, c, w);
-  const hand = (x, y, r) => E(x, y, 15 * (r || 1), 13 * (r || 1), 'url(#gSkin)', LINE) + S(`M${x + 2} ${y - 5} q1 6 0 11`, '#c9907a', 1.5, 'opacity=".55"');
+  const hand = (x, y, r) => E(x, y, 15 * (r || 1), 13 * (r || 1), 'url(#gSkin)', LINE) + S(`M${x - 7} ${y - 6} q1 7 0 12 M${x - 1} ${y - 7} q1 8 0 14 M${x + 5} ${y - 6} q1 7 0 12`, '#c9907a', 1.3, 'opacity=".5"');
 
   function girl(mood, outfit) {
     const o = outfit || { kind: 'dress' }, hair = 'url(#gHair)';
     const sleeve = (o.kind === 'swim' || o.kind === 'formal') ? 'url(#gSkin)' : (o.c1 || '#7fd1d8');
     let s = '';
     s += P('M-84 -6 C-90 -92 -42 -112 0 -112 C42 -112 90 -92 84 -6 C92 70 88 150 74 214 L-74 214 C-88 150 -92 70 -84 -6Z', hair, LINE);
+    s += P('M-74 20 C-84 90 -80 160 -68 208 L68 208 C80 160 84 90 74 20Z', '#b83f7a', 'opacity=".4"');
     s += '<g transform="translate(0 -16)">';
     s += `<g transform="scale(.9 1)">${torsoGirl(o.kind, o.c1, o.c2)}</g>`;
     s += P('M-14 60 L14 60 L16 126 L-16 126Z', '#f3c2a6') + P('M-14 60 L14 60 L14 84 Q0 98 -14 84Z', '#000', 'opacity=".12"');
@@ -166,14 +173,20 @@
     } else {
       s += arm('M-88 150 Q-108 226 -18 224', sleeve, 32) + arm('M88 150 Q108 226 18 224', sleeve, 32) + hand(-8, 220, .95) + hand(8, 220, .95);
     }
+    s += P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gShade)', 'opacity=".45"') + S('M-70 250 Q-52 290 -58 336 M70 250 Q52 290 58 336 M-30 300 Q-24 322 -28 340 M30 300 Q24 322 28 340', '#000', 2.5, 'opacity=".13"');
     s += '</g>';
     s += E(-58, 8, 7, 13, '#ffd9c4', LINE) + E(58, 8, 7, 13, '#ffd9c4', LINE);
     s += P(FACE_G, 'url(#gSkin)', LINE);
+    s += E(-34, 30, 20, 12, '#fff', 'opacity=".18"') + E(34, 30, 20, 12, '#fff', 'opacity=".18"');
+    s += P('M-60 -18 Q0 6 60 -18 Q56 -46 0 -52 Q-56 -46 -60 -18Z', '#b8467a', 'opacity=".2"');
     s += face(mood, 'girl');
     s += P('M-60 -30 C-86 30 -82 130 -68 214 C-54 160 -52 80 -54 20Z', hair, LINE) + P('M60 -30 C86 30 82 130 68 214 C54 160 52 80 54 20Z', hair, LINE);
     s += P('M-66 -14 C-68 -90 -24 -110 4 -110 C40 -110 72 -88 66 -14 C60 -46 46 -66 26 -76 C30 -54 18 -34 4 -30 C0 -54 -18 -68 -38 -64 C-56 -56 -62 -36 -66 -14Z', hair, LINE) +
       P('M-30 -98 Q-6 -110 22 -100', 'none', 'stroke="#fff" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"') +
       S('M-4 -96 Q-14 -64 -8 -38 M30 -88 Q36 -64 24 -42 M-36 -86 Q-50 -62 -56 -36', '#c94b83', 2.2, 'opacity=".55"');
+    s += S('M-50 -70 Q-70 -20 -66 40 M-30 -92 Q-62 -50 -58 10 M20 -92 Q50 -66 56 -20 M0 -100 Q30 -90 46 -66', '#ffd9ea', 3, 'opacity=".6"') +
+      S('M-70 60 Q-76 120 -70 190 M70 60 Q76 120 70 190 M-62 80 Q-64 140 -58 196 M62 80 Q64 140 58 196', '#ffb3d1', 2.4, 'opacity=".7"') +
+      S('M-70 70 Q-78 130 -72 200 M70 70 Q78 130 72 200', '#c94b83', 2.5, 'opacity=".35"');
     s += C(46, -64, 6.5, '#ffd54a', 'stroke="#e0a61a" stroke-width="2"') + C(46, -64, 2.4, '#fff');
     s += accessory(o.acc);
     return s;
@@ -188,17 +201,19 @@
     s += arm('M-86 152 Q-122 190 -118 226', W, 38) + arm('M-118 226 Q-112 262 -62 276', 'url(#gSkin)', 22) + hand(-58, 276, .95);
     s += arm('M86 152 Q112 220 110 262', W, 38) + arm('M110 262 L108 330', 'url(#gSkin)', 22) + hand(108, 336, .95);
     s += P('M-86 138 L-122 214 L-98 226 L-70 150Z M86 138 L118 214 L94 226 L70 150Z', W, WL) ;
-    s += P('M-15 62 L15 62 L16 134 L-16 134Z', '#f3c2a6');
+    s += P('M-15 62 L15 62 L16 134 L-16 134Z', '#f3c2a6') + P('M-15 62 L15 62 L15 86 Q0 100 -15 86Z', '#000', 'opacity=".12"');
     s += P('M-24 126 L0 170 L24 126 Q0 138 -24 126Z', '#f3c2a6');
     s += P('M-26 122 L-6 168 L-46 178 L-62 144Z M26 122 L6 168 L46 178 L62 144Z', W, WL);
     s += P('M-9 168 L9 168 L12 184 L-12 184Z', '#20202a') + P('M-12 184 L12 184 L19 318 L2 338 L-17 318Z', '#2a2a35') + S('M-5 200 L-9 300', '#fff', 1.4, 'opacity=".12"');
     s += P('M-66 -6 C-80 -84 -40 -112 0 -112 C40 -112 80 -84 66 -6 L62 40 L-62 40Z', 'url(#gHairB)', LINE);
+    s += P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gShade)', 'opacity=".4"') + S('M-60 200 Q-40 250 -52 330 M60 200 Q44 250 52 330 M-20 250 Q-16 300 -22 336 M26 240 Q30 290 24 336', '#7a8098', 2.6, 'opacity=".28"');
     s += '</g>';
     s += E(-56, 6, 7, 13, '#ffd9c4', LINE) + E(56, 6, 7, 13, '#ffd9c4', LINE);
     s += P(FACE_B, 'url(#gSkin)', LINE);
     s += face(mood, 'boy');
     s += P('M-62 -6 C-74 -70 -40 -104 -6 -106 L-12 -130 L12 -108 L30 -128 L34 -102 L60 -114 L52 -86 C70 -66 66 -30 62 -6 C58 -30 52 -46 38 -56 C34 -40 16 -44 8 -56 C0 -40 -20 -44 -30 -54 C-42 -40 -52 -30 -62 -6Z', 'url(#gHairB)', LINE) +
       P('M-34 -100 Q-6 -112 28 -102', 'none', 'stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"') +
+      S('M-44 -86 Q-52 -50 -56 -20 M-14 -100 Q-24 -70 -30 -50 M16 -102 Q8 -76 6 -58 M44 -96 Q54 -70 58 -34', '#6a74b0', 2.4, 'opacity=".6"') + S('M-50 -60 Q-30 -86 6 -90', '#9aa8ff', 3, 'opacity=".45"') +
       P('M-62 -6 C-64 24 -60 50 -54 60 C-54 36 -54 14 -52 -4Z', 'url(#gHairB)') + P('M62 -6 C64 24 60 50 54 60 C54 36 54 14 52 -4Z', 'url(#gHairB)');
     return s;
   }
@@ -373,11 +388,13 @@
     concert: { kind: 'tee', c1: '#ffffff', c2: '#ff5fa2', acc: 'headband' }, rooftop: { kind: 'formal', c1: '#c2185b', c2: '#ffe7f0', acc: 'tiara' },
   };
 
+  // 立繪圖片：以頭部中心為原點、約 340 寬 × 480 高，可在 js/sprites.js 指定
+  const sprite = (u) => `<image href="${u}" x="-170" y="-130" width="340" height="480" preserveAspectRatio="xMidYMin meet"/>`;
   G.Art = {
     defs: DEFS,
     scene: (k) => { seed = 7; return (SCENES[k] || SCENES.home)(); },
-    girl: (mood, scene) => girl(mood, OUTFITS[scene] || OUTFITS.cafe),
-    boy,
+    girl: (mood, scene) => (G.SPRITES && G.SPRITES.girl && G.SPRITES.girl[mood]) ? sprite(G.SPRITES.girl[mood]) : girl(mood, OUTFITS[scene] || OUTFITS.cafe),
+    boy: (mood) => (G.SPRITES && G.SPRITES.boy && G.SPRITES.boy[mood]) ? sprite(G.SPRITES.boy[mood]) : boy(mood),
     outfits: OUTFITS,
     scenes: Object.keys(SCENES),
   };
