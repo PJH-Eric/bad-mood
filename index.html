@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2a5d86">
+<title>請問，你在生氣什麼？｜對話模擬遊戲</title>
+<meta name="description" content="猜猜她為什麼生氣？20 個場景、每關 5～10 題，答錯一題就直接 GAME OVER 的單機對話模擬遊戲。免下載、純網頁。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <svg id="art" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs id="defs"></defs>
+      <g id="bg"></g>
+      <g id="bgx"></g>
+      <g id="boyG" transform="translate(190 172) scale(.96)"></g>
+      <g id="fxB"></g>
+      <g id="girlG" transform="translate(770 172) scale(.96)"></g>
+      <g id="fxG"></g>
+      <rect id="moodTint" width="960" height="540" fill="#ff2a3a" opacity="0"/>
+    </svg>
+
+    <!-- 遊戲 HUD -->
+    <div id="hud" class="hidden">
+      <div id="timer"><i id="timerBar"></i></div>
+      <div id="lvTag"></div>
+      <div id="dots"></div>
+    </div>
+    <div id="choices"></div>
+    <div id="dlg" class="hidden">
+      <div id="nameTag"></div>
+      <div id="dlgText"></div>
+      <div id="next" class="hidden">▼</div>
+      <button id="menuBtn" class="heartBtn" aria-label="選單"></button>
+    </div>
+
+    <!-- 標題 -->
+    <section id="scrTitle" class="scr">
+      <div id="petals"></div>
+      <div class="logoWrap">
+        <div class="logoTag"><i></i>AVG 對話模擬遊戲<i></i></div>
+        <div class="logoSmall">請問，</div>
+        <h1>你在<span>生氣</span>什麼？</h1>
+        <div class="logoSub">猜猜她為什麼生氣　答錯一題，就 GAME OVER</div>
+      </div>
+      <div class="menuPanel">
+        <div class="nameRow">
+          <label for="nameIn">她的名字</label>
+          <input id="nameIn" maxlength="8" autocomplete="off" spellcheck="false" placeholder="輸入女友的名字">
+        </div>
+        <button class="gbtn big" id="btnStart">開始遊戲<small id="progChip"></small></button>
+        <div class="btnRow">
+          <button class="gbtn" id="btnHow">遊戲說明</button>
+          <button class="gbtn" id="btnSet">設定</button>
+        </div>
+      </div>
+      <div class="tFoot">20 個場景　‧　180 題　‧　固定題＋隨機題</div>
+    </section>
+
+    <!-- 選關 -->
+    <section id="scrSelect" class="scr hidden">
+      <div class="panel wide">
+        <div class="panelHead"><button class="gbtn small" id="selBack">‹ 返回</button><h2>選擇場景</h2><div id="selStat"></div></div>
+        <div id="grid"></div>
+      </div>
+    </section>
+
+    <!-- 關卡開場卡 -->
+    <section id="scrIntro" class="scr hidden clear"><div class="introCard"><div id="introNo"></div><div id="introPlace"></div><div id="introTitle"></div></div></section>
+
+    <!-- GAME OVER -->
+    <section id="scrOver" class="scr hidden">
+      <div class="overBox">
+        <div class="overBig">GAME OVER</div>
+        <div id="overMsg"></div>
+        <div class="btnRow"><button class="gbtn big" id="btnRetry">重來本關</button><button class="gbtn" id="btnOverSel">回選關</button></div>
+      </div>
+    </section>
+
+    <!-- 通關 -->
+    <section id="scrClear" class="scr hidden">
+      <div class="overBox good">
+        <div class="overBig">CLEAR!</div>
+        <div id="clearMsg"></div>
+        <div class="btnRow"><button class="gbtn big" id="btnNext">下一關</button><button class="gbtn" id="btnClearSel">回選關</button></div>
+      </div>
+    </section>
+
+    <!-- 結局 -->
+    <section id="scrEnd" class="scr hidden">
+      <div class="overBox good endBox">
+        <div class="overBig">她終於笑了</div>
+        <div id="endMsg"></div>
+        <div id="endStat"></div>
+        <div class="btnRow"><button class="gbtn big" id="btnEndSel">回選關</button><button class="gbtn" id="btnEndTitle">回標題</button></div>
+      </div>
+    </section>
+
+    <!-- 暫停 / 設定 / 說明 / 確認 -->
+    <section id="scrPause" class="scr hidden">
+      <div class="panel"><h2>暫停</h2>
+        <div class="btnCol"><button class="gbtn big" id="pResume">繼續</button><button class="gbtn" id="pRetry">重來本關</button><button class="gbtn" id="pSet">設定</button><button class="gbtn" id="pSel">回選關</button></div>
+      </div>
+    </section>
+
+    <section id="scrSet" class="scr hidden">
+      <div class="panel"><h2>設定</h2>
+        <div class="setRow"><span>音效</span><div class="sw" id="swSfx"></div></div>
+        <div class="setRow"><span>背景音樂</span><div class="sw" id="swBgm"></div></div>
+        <div class="setRow"><span>文字速度</span><div class="seg" id="segSpeed"><b data-v="slow">慢</b><b data-v="mid">中</b><b data-v="fast">快</b><b data-v="off">即時</b></div></div>
+        <div class="setRow"><span>清除進度</span><button class="gbtn small danger" id="btnClear">清除</button></div>
+        <div class="btnCol"><button class="gbtn big" id="setBack">完成</button></div>
+      </div>
+    </section>
+
+    <section id="scrHow" class="scr hidden">
+      <div class="panel wide"><h2>遊戲說明</h2>
+        <div class="howText">
+          <p>她今天不知道為什麼在生氣——而且每一關的理由都不一樣。</p>
+          <p>聽她說的話，選出<b>最能讓她消氣</b>的回答。有時候答案很合理，有時候很離譜，有時候看似完全不重要的小事，才是真正的地雷。</p>
+          <p>每關 5～10 題，固定題＋隨機題混合，重來時隨機題與選項順序都會改變。</p>
+          <p><b>任何一題答錯、或是超過時間沒回答，本關立刻 GAME OVER。</b>關卡越後面，作答時間越短。</p>
+          <p class="dim">快捷鍵：1～4 選擇答案　Enter／空白鍵 繼續　Esc 暫停</p>
+        </div>
+        <div class="btnCol"><button class="gbtn big" id="howBack">我知道了</button></div>
+      </div>
+    </section>
+
+    <section id="scrConfirm" class="scr hidden">
+      <div class="panel"><h2 id="cfTitle">確定嗎？</h2><p id="cfMsg" class="howText"></p>
+        <div class="btnRow"><button class="gbtn big" id="cfYes">確定</button><button class="gbtn" id="cfNo">取消</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+<script src="js/data-a.js"></script>
+<script src="js/data-b.js"></script>
+<script src="js/art.js"></script>
+<script src="js/art2.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
