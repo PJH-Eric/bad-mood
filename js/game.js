@@ -66,6 +66,8 @@
       $('nameTag').textContent = name; $('nameTag').style.display = name ? '' : 'none';
       const t = nm(text), el = $('dlgText'); $('next').classList.add('hidden'); nextCb = null;
       const sp = SPEED[state.speed]; if (typing) typing.finish();
+      el.textContent = t; el.style.fontSize = '';
+      for (const s of [.92, .86, .8, .74, .68]) { if (el.scrollHeight <= el.clientHeight + 1) break; el.style.fontSize = `calc(var(--u)*${(25 * s).toFixed(1)})`; }
       if (!sp) { el.textContent = t; typing = null; return res(); }
       let i = 0; el.textContent = '';
       const iv = setInterval(() => { i++; el.textContent = t.slice(0, i); if (i % 3 === 0) Au.play('tick'); if (i >= t.length) done(); }, sp);
@@ -198,6 +200,17 @@
     e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump');
   }
   const timeMul = () => (aff >= 2 ? 1.25 : aff <= -2 ? .85 : 1);
+  /* 選項太多或太長時，自動縮小字級／加寬，確保選項區不會蓋到對話框或上方計時列 */
+  function fitChoices(box) {
+    const steps = [[380, 1], [380, .92], [430, .92], [430, .84], [470, .78], [470, .7], [500, .64], [500, .58]];
+    const room = () => box.clientHeight;
+    const need = () => { let h = 0; [...box.children].forEach((c) => { h += c.offsetHeight; }); return h + (box.children.length - 1) * parseFloat(getComputedStyle(box).rowGap || 0); };
+    for (const [w, s] of steps) {
+      box.style.setProperty('--cw', w); box.style.setProperty('--cs', s);
+      if (need() <= room()) break;
+    }
+  }
+  G.fitChoices = fitChoices;
   function ask(opts, sec) {
     return new Promise((res) => {
       camTo(50, 1, .8); const box = $('choices'); box.innerHTML = '';
@@ -207,7 +220,7 @@
         d.addEventListener('click', () => { if (paused) return; timerStop(); Au.play('click'); d.classList.add('picked'); [...box.children].forEach((c) => (c.style.pointerEvents = 'none')); res({ o }); });
         box.appendChild(d);
       });
-      cur.opts = opts;
+      cur.opts = opts; fitChoices(box);
       if (sec) timerStart(sec, () => { box.innerHTML = ''; res({ timeout: true }); }); else { timerStop(); $('timerBar').style.transform = 'scaleX(1)'; }
     });
   }
