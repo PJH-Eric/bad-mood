@@ -234,11 +234,13 @@
     s += P(FACE_B, 'url(#gSkin)', LINE) + P(FACE_B, 'url(#gFaceShade)') + S('M-40 62 Q0 82 40 62', '#b9806a', 2, 'opacity=".25"');
     s += face(mood, 'boy');
     s += '<g>';
-    s += P('M-63 -6 C-70 -58 -42 -90 0 -90 C42 -90 70 -58 63 -6 C60 -22 54 -36 47 -46 L36 -32 L22 -50 L8 -34 L-6 -52 L-20 -36 L-34 -50 L-47 -34 C-54 -24 -59 -14 -63 -6Z', 'url(#gHairB)', 'stroke="#4a2438" stroke-opacity=".75" stroke-width="2.6" stroke-linejoin="round"') +
-      S('M-34 -78 Q-6 -90 28 -80', '#fff', 4, 'stroke-opacity=".35" stroke-linecap="round"') +
-      S('M-44 -66 Q-50 -48 -54 -26 M-16 -84 Q-22 -66 -24 -52 M18 -84 Q12 -68 10 -50 M44 -70 Q52 -52 56 -30', '#6a74b0', 2.2, 'opacity=".55"') +
-      S('M-28 -50 Q-20 -40 -8 -52 M8 -52 Q22 -40 34 -50', '#16141f', 2.4, 'opacity=".18"') +
-      P('M-63 -6 C-64 4 -61 14 -56 20 C-56 10 -55 2 -53 -4Z', 'url(#gHairB)') + P('M63 -6 C64 4 61 14 56 20 C56 10 55 2 53 -4Z', 'url(#gHairB)');
+    const HS = 'stroke="#2a1a2e" stroke-opacity=".8" stroke-width="2.4" stroke-linejoin="round"';
+    s += S('M-2 -88 C-14 -104 -6 -120 14 -124', '#2b2a46', 5, 'stroke-linecap="round"') + S('M-2 -88 C-14 -104 -6 -120 14 -124', '#6a74b0', 1.6, 'opacity=".5" stroke-linecap="round"');
+    s += P('M-64 -4 C-74 -60 -42 -92 0 -92 C42 -92 74 -60 64 -4 L58 -26 L56 -8 L47 -34 L40 -22 L32 -44 L20 -30 L8 -50 L-2 -32 L-12 -48 L-22 -28 L-32 -44 L-40 -24 L-48 -36 L-56 -8 L-58 -26Z', 'url(#gHairB)', HS) +
+      P('M-62 -14 L-67 22 L-57 6 L-52 -12Z M62 -14 L67 22 L57 6 L52 -12Z', 'url(#gHairB)', HS) +
+      S('M-36 -78 Q-6 -92 30 -80', '#fff', 4, 'stroke-opacity=".32" stroke-linecap="round"') +
+      S('M-50 -60 Q-52 -40 -52 -20 M-26 -84 Q-30 -62 -30 -38 M0 -90 Q-4 -66 -2 -40 M26 -84 Q24 -62 20 -38 M52 -60 Q52 -40 52 -20', '#6a74b0', 2, 'opacity=".55"') +
+      S('M-40 -30 Q-30 -22 -20 -32 M10 -32 Q24 -22 34 -34', '#16141f', 2.2, 'opacity=".18"');
     s += '</g>';
     return s;
   }
