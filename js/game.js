@@ -241,10 +241,16 @@
   $('swSfx').onclick = () => { state.sfx = !state.sfx; Au.setSfx(state.sfx); save(); refreshSet(); Au.play('click'); };
   $('swBgm').onclick = () => { state.bgm = !state.bgm; Au.setBgm(state.bgm); save(); refreshSet(); Au.play('click'); };
   $('segSpeed').onclick = (e) => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; state.speed = v; save(); refreshSet(); Au.play('click'); };
-  function confirmBox(title, msg, yes) {
-    $('cfTitle').textContent = title; $('cfMsg').textContent = msg; show('scrConfirm');
-    $('cfYes').onclick = () => { yes(); }; $('cfNo').onclick = () => { show('scrSet'); };
+  function confirmBox(title, msg, yes, no) {
+    $('cfTitle').textContent = title; $('cfMsg').textContent = msg; $('cfMsg').style.whiteSpace = 'pre-wrap'; show('scrConfirm');
+    $('cfYes').onclick = () => { Au.play('click'); yes(); }; $('cfNo').onclick = () => { Au.play('click'); (no || (() => show('scrSet')))(); };
   }
+  // 關卡內隨時可離開（本關進度不保留，不計入失敗次數）
+  $('exitBtn').onclick = (e) => {
+    e.stopPropagation(); Au.play('click'); paused = true; timer.paused = true;
+    confirmBox('離開本關', '要離開這一關、回到選關畫面嗎？\n本關目前的進度不會保留。', toSelect, closePause);
+  };
+  $('pHome').onclick = () => { Au.play('click'); paused = false; timer.paused = false; toTitle(); };
   $('btnClear').onclick = () => confirmBox('清除進度', '所有關卡進度與累計次數都會歸零，確定要清除嗎？', () => { state.cleared = Array(20).fill(false); state.fails = 0; save(); refreshSet(); show('scrSet'); });
 
   /* ---------- 其他按鈕 ---------- */

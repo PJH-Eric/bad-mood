@@ -131,3 +131,5 @@ h1 span{color:#ffe27a;-webkit-text-stroke-color:#d9482d}
 #petals{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 #petals i{position:absolute;top:-6%;width:calc(var(--u)*14*var(--s));height:calc(var(--u)*14*var(--s));background:radial-gradient(circle at 30% 30%,#fff,#ffb3cc);border-radius:80% 0 80% 0;opacity:.85;animation:petal 9s linear infinite}
 @keyframes petal{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(calc(var(--u)*60),55vh) rotate(180deg)}100%{transform:translate(calc(var(--u)*-20),115vh) rotate(380deg);opacity:.2}}
+
+#exitBtn{position:absolute;left:calc(var(--u)*18);top:calc(var(--u)*58);pointer-events:auto;z-index:7}
