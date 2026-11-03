@@ -181,3 +181,4 @@ body{line-break:strict;overflow-wrap:break-word}
 .menuPanel .btnRow .gbtn{padding-left:calc(var(--u)*14);padding-right:calc(var(--u)*14);min-width:0}
 .menuPanel .btnRow{width:100%;flex-wrap:nowrap}.menuPanel .btnRow .gbtn{flex:1 1 0}
 .langTop{position:absolute;top:calc(var(--u)*12);right:calc(var(--u)*14);z-index:5}.langTop .seg b{padding:calc(var(--u)*3) calc(var(--u)*10);font-size:calc(var(--u)*15)}
+.menuPanel .btnRow .gbtn{flex:1 1 auto;padding-left:calc(var(--u)*10);padding-right:calc(var(--u)*10);font-size:calc(var(--u)*18);min-width:fit-content}.menuPanel .btnRow .gbtn.small{font-size:calc(var(--u)*16)}
