@@ -113,8 +113,8 @@
     const rand = mode === 'rand', r = rand ? Math.random : rngOf((idx + 1) * 7919 + 13);
     /* 越後面的關卡，混入越多荒謬題（第 4 關起 1 題，之後每 4 關多 1 題） */
     const A = G.ABSURD || {}, own = A[idx] || [];
-    const ap = []; for (let k = 3; k <= idx; k++) (A[k] || []).forEach((q) => ap.push(q));
-    const na = idx < 3 ? 0 : Math.min(own.length, 1 + Math.floor((idx - 3) / 4) + (idx >= 14 ? 1 : 0) + (idx >= 17 ? 1 : 0));
+    const ap = []; for (let k = 0; k <= idx; k++) (A[k] || []).forEach((q) => ap.push(q));
+    const na = Math.min(own.length, 1 + Math.floor(idx / 4) + (idx >= 14 ? 1 : 0) + (idx >= 17 ? 1 : 0));
     const total = lv.fixed.length + lv.pick;
     let list;
     if (rand) {
@@ -454,6 +454,7 @@
     $('cfTitle').textContent = title; $('cfMsg').textContent = msg; $('cfMsg').style.whiteSpace = 'pre-wrap'; show('scrConfirm');
     $('cfYes').onclick = () => { Au.play('click'); yes(); }; $('cfNo').onclick = () => { Au.play('click'); (no || (() => show('scrSet')))(); };
   }
+  G.confirmBox = confirmBox; G.showScr = show;
   // 關卡內隨時可離開（本關進度不保留，不計入失敗次數）
   $('exitBtn').onclick = (e) => {
     e.stopPropagation(); Au.play('click'); paused = true; timer.paused = true;

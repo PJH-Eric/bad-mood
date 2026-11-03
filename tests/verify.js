@@ -1,7 +1,7 @@
 /* 題庫與美術完整性檢查：node tests/verify.js */
 global.window = {};
 const fs = require('fs'), path = require('path');
-for (const f of ['audio.js', 'sprites.js', 'art.js', 'art2.js', 'data-a.js', 'data-b.js', 'data-c.js', 'data-d.js']) new Function('window', fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8'))(window);
+for (const f of ['audio.js', 'sprites.js', 'art.js', 'art2.js', 'data-a.js', 'data-b.js', 'data-c.js', 'data-d.js', 'data-e.js']) new Function('window', fs.readFileSync(path.join(__dirname, '..', 'js', f), 'utf8'))(window);
 const { LEVELS, Art } = window.GAME;
 const MOODS = ['angry', 'sulk', 'sad', 'shock', 'cold', 'happy', 'blush', 'normal', 'nervous'];
 let err = 0; const bad = (m) => { console.log('✗', m); err++; };
