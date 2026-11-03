@@ -110,7 +110,7 @@
           o += [0, 1, 2, 3, 4, 5, 6, 7].map(i => { const a = i * Math.PI / 4; return S(`M${cx + Math.cos(a) * 112} ${cy - 10 + Math.sin(a) * 112} L${cx + Math.cos(a) * 150} ${cy - 10 + Math.sin(a) * 150}`, '#fff', 4, 'class="pulse"'); }).join('') + TX(cx + 100, cy - 112, '！', 44, '#ff3b4a', 'class="bob"');
           break;
         case 'cold':
-          o += [0, 1, 2, 3, 4, 5].map(i => S(`M${cx - 60 + i * 24} ${cy - 76} v${24 + (i % 3) * 10}`, '#4a6aaa', 4, 'opacity=".55"')).join('') + [0, 1, 2].map(i => spark(cx - 100 + i * 100, cy - 130 + (i % 2) * 30, .9, '#cfe8ff').replace('<path', '<path class="twk"')).join('');
+          o += [0, 1, 2, 3, 4, 5].map(i => S(`M${cx - 60 + i * 24} ${cy - 76} v${24 + (i % 3) * 10}`, '#9a7ab8', 2.5, 'opacity=".4"')).join('') + [0, 1, 2].map(i => spark(cx - 100 + i * 100, cy - 130 + (i % 2) * 30, .9, '#cfe8ff').replace('<path', '<path class="twk"')).join('');
           break;
         case 'happy':
           o += [0, 1, 2, 3, 4, 5].map(i => `<g class="floatup" ${dl(i, 5)}>${heart(cx - 100 + i * 40, cy + 110, .9 + (i % 3) * .3, i % 2 ? '#ff9fc0' : '#ff6f9c')}</g>`).join('') + [0, 1, 2, 3].map(i => spark(cx - 110 + i * 70, cy - 120 + (i % 2) * 40, 1.1).replace('<path', '<path class="twk"')).join('');

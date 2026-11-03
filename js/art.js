@@ -13,11 +13,13 @@
 
   /* ---------- 共用漸層（放在舞台 <defs>） ---------- */
   const DEFS = `
-  <linearGradient id="gHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9fc6"/><stop offset="1" stop-color="#e0558f"/></linearGradient>
-  <linearGradient id="gHairB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4660"/><stop offset="1" stop-color="#1c1a2b"/></linearGradient>
-  <linearGradient id="gSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0e4"/><stop offset="1" stop-color="#ffd9c4"/></linearGradient>
-  <radialGradient id="gIris" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#e98bb0"/><stop offset="1" stop-color="#8a3a68"/></radialGradient>
-  <radialGradient id="gIrisB" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#ffd777"/><stop offset="1" stop-color="#a86a1a"/></radialGradient>
+  <linearGradient id="gHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc2dc"/><stop offset=".3" stop-color="#ff98c3"/><stop offset=".7" stop-color="#e65f97"/><stop offset="1" stop-color="#b53a72"/></linearGradient>
+  <linearGradient id="gHairB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a5878"/><stop offset=".35" stop-color="#3b3852"/><stop offset="1" stop-color="#16141f"/></linearGradient>
+  <linearGradient id="gSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4ea"/><stop offset=".6" stop-color="#ffe3d2"/><stop offset="1" stop-color="#f7c9b4"/></linearGradient>
+  <radialGradient id="gFaceShade" cx=".5" cy=".42" r=".62"><stop offset=".62" stop-color="#d27f6c" stop-opacity="0"/><stop offset="1" stop-color="#c06a5c" stop-opacity=".38"/></radialGradient>
+  <radialGradient id="gIris" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#9a3d75"/><stop offset=".45" stop-color="#e48ab4"/><stop offset=".85" stop-color="#ffc4dc"/><stop offset="1" stop-color="#7a2e5e"/></radialGradient>
+  <radialGradient id="gIrisB" cx=".5" cy=".3" r=".75"><stop offset="0" stop-color="#8a5210"/><stop offset=".45" stop-color="#f2b84a"/><stop offset=".85" stop-color="#ffe49a"/><stop offset="1" stop-color="#7a4a10"/></radialGradient>
+  <linearGradient id="gCloth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".35" stop-color="#fff" stop-opacity=".12"/><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
   <linearGradient id="gShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>`;
 
   /* ---------- 表情設定 ---------- */
@@ -38,7 +40,7 @@
     const boy = who === 'boy';
     const dark = boy ? '#2b2233' : '#5a2d3d';
     const iris = boy ? 'url(#gIrisB)' : 'url(#gIris)';
-    const ex = boy ? 25 : 27, ey = boy ? 4 : 6, sx = boy ? .82 : .9;
+    const ex = boy ? 25 : 27, ey = boy ? 4 : 6, sx = boy ? .85 : 1.02;
     let o = '';
     // 臉頰紅暈
     if (c.blush) o += E(-39, ey + 25, 12, 7, '#ff8fa8', `opacity="${c.blush * (boy ? .6 : .8)}"`) + E(39, ey + 25, 12, 7, '#ff8fa8', `opacity="${c.blush * (boy ? .6 : .8)}"`);
@@ -55,7 +57,8 @@
       o += clip + `<g clip-path="url(#${id})">` + E(cx, ey, 15, h, '#fff', `stroke="${dark}" stroke-width="2"`) +
         E(cx, ey - h * .55, 15, h * .5, boy ? '#c9b8a0' : '#cdb4cc', 'opacity=".5"') +
         E(lx, ey + 1, ir, ih, iris) + E(lx, ey + 1, ir, ih, 'none', `stroke="${boy ? '#7a4a0c' : '#6a2656'}" stroke-width="1.8" opacity=".8"`) +
-        E(lx, ey + ih * .5, ir * .7, ih * .38, '#fff', 'opacity=".3"') +
+        E(lx, ey - ih * .3, ir * .95, ih * .5, boy ? '#5a2e00' : '#3a1030', 'opacity=".3"') + S(`M${lx} ${ey + 1} L${lx - ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx + ir * .8} ${ey - ih * .5} M${lx} ${ey + 1} L${lx - ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx + ir * .95} ${ey + ih * .2} M${lx} ${ey + 1} L${lx - ir * .5} ${ey + ih * .9} M${lx} ${ey + 1} L${lx + ir * .5} ${ey + ih * .9}`, '#fff', .8, 'opacity=".28"') +
+        E(lx, ey + ih * .55, ir * .72, ih * .34, '#fff', 'opacity=".38"') +
         E(lx, ey + 2, c.small ? 3.2 : 5.4, c.small ? 3.6 : h * .44, '#26101e') +
         E(lx - 4.6, ey - h * .42, c.small ? 2.2 : 3.6, c.small ? 2.6 : 4.8, '#fff') + C(lx + 4.4, ey + h * .42, c.small ? 1.2 : 2, '#fff', 'opacity=".9"') + C(lx + 1.5, ey - h * .1, .9, '#fff', 'opacity=".8"') + '</g>';
       o += S(`M${cx - 14} ${ey - h - 5} Q${cx} ${ey - h - 11} ${cx + 14} ${ey - h - 4}`, dark, 1.3, 'opacity=".45"');
@@ -64,15 +67,16 @@
       const lash = ey - h + (s < 0 ? lid * .4 : lid) * (s < 0 ? 1 : 0) + 0;
       o += S(`M${cx - 16} ${ey - h * .2 + (s < 0 ? lid * .3 : lid * .9) * 0.0} Q${cx} ${ey - h - 7 + lid * .5} ${cx + 16} ${ey - h * .1}`, dark, boy ? 3 : 4);
       if (!boy) o += S(`M${cx + s * 15} ${ey - h * .3} l${s * 7} -5`, dark, 2.5);
+      else o += S(`M${cx - 15} ${ey - h * .2} Q${cx} ${ey - h - 8} ${cx + 15} ${ey - h * .1}`, '#000', 1.4, 'opacity=".5"') + S(`M${cx + s * 14} ${ey - h * .3} l${s * 4} -3`, dark, 2);
     }
     // 眉毛
     const [bi, bo] = c.brow, by = boy ? 3 : 0;
     for (const s of [-1, 1]) o += S(`M${s * 11} ${bi + by - 1} Q${s * 26} ${(bi + bo) / 2 - 7 + by} ${s * 40} ${bo + by}`, boy ? '#1a1626' : '#a24a76', boy ? 5 : 3.5);
-    o += S(`M-1.5 ${ey + 24} q1.5 3 3 0`, boy ? '#b9806a' : '#d99a86', 1.8, 'opacity=".7"');
+    o += S(`M-1.5 ${ey + 24} q1.5 3 3 0`, boy ? '#b9806a' : '#d99a86', 1.8, 'opacity=".7"') + S(`M-3 ${ey + 14} Q0 ${ey + 18} 3 ${ey + 14}`, '#fff', 1.6, 'opacity=".55"') + E(2, ey + 22, 2, 1.2, '#fff', 'opacity=".7"');
     // 嘴巴
     const my = boy ? 48 : 46;
     switch (c.mouth) {
-      case 'smile': o += S(`M-11 ${my} Q0 ${my + 11} 11 ${my}`, dark, 3); break;
+      case 'smile': o += S(`M-11 ${my} Q0 ${my + 11} 11 ${my}`, dark, 3) + (boy ? '' : S(`M-5 ${my + 7} Q0 ${my + 10} 5 ${my + 7}`, '#ff8fa0', 3, 'opacity=".55"') + S(`M-3 ${my + 8} Q0 ${my + 9.5} 3 ${my + 8}`, '#fff', 1.2, 'opacity=".6"')); break;
       case 'open': o += P(`M-15 ${my - 4} Q0 ${my + 28} 15 ${my - 4}Z`, '#c23a5b', `stroke="${dark}" stroke-width="2.5"`) + E(0, my + 8, 7, 4, '#ff8fa0'); break;
       case 'pout': o += S(`M-7 ${my + 4} Q0 ${my - 3} 7 ${my + 4}`, dark, 3); break;
       case 'o': o += E(0, my + 5, 7, 10, '#b8344f', `stroke="${dark}" stroke-width="2.5"`); break;
@@ -154,7 +158,9 @@
   const FACE_G = 'M-58 -6 C-58 -50 -30 -72 0 -72 C30 -72 58 -50 58 -6 C58 38 34 72 0 82 C-34 72 -58 38 -58 -6Z';
   const FACE_B = 'M-56 -4 C-56 -48 -30 -70 0 -70 C30 -70 56 -48 56 -4 C56 36 38 70 0 78 C-38 70 -56 36 -56 -4Z';
   const arm = (d, c, w) => S(d, '#3a2a3f', w + 4, 'stroke-opacity=".4"') + S(d, c, w);
-  const hand = (x, y, r) => E(x, y, 15 * (r || 1), 13 * (r || 1), 'url(#gSkin)', LINE) + S(`M${x - 7} ${y - 6} q1 7 0 12 M${x - 1} ${y - 7} q1 8 0 14 M${x + 5} ${y - 6} q1 7 0 12`, '#c9907a', 1.3, 'opacity=".5"');
+  const hand = (x, y, r) => { r = r || 1; let o = E(x, y, 15 * r, 13 * r, 'url(#gSkin)', LINE);
+    for (let i = 0; i < 4; i++) o += E(x - 9 * r + i * 6 * r, y + 9 * r, 3.8 * r, 6.5 * r, 'url(#gSkin)', 'stroke="#b8806c" stroke-opacity=".5" stroke-width="1.2"') + E(x - 9 * r + i * 6 * r, y + 12 * r, 2 * r, 1.6 * r, '#ffd0cc', 'opacity=".8"');
+    o += E(x + 13 * r, y - 1 * r, 4.5 * r, 7 * r, 'url(#gSkin)', 'stroke="#b8806c" stroke-opacity=".5" stroke-width="1.2" transform="rotate(-20 ' + (x + 13 * r) + ' ' + y + ')"') + E(x - 3 * r, y - 5 * r, 8 * r, 3 * r, '#fff', 'opacity=".4"') + S(`M${x - 7 * r} ${y + 1 * r} q1 5 0 8 M${x - 1 * r} ${y} q1 6 0 10 M${x + 5 * r} ${y + 1 * r} q1 5 0 8`, '#c9907a', 1.1, 'opacity=".5"'); return o; };
 
   function girl(mood, outfit) {
     const o = outfit || { kind: 'dress' }, hair = 'url(#gHair)';
@@ -174,9 +180,10 @@
       s += arm('M-88 150 Q-108 226 -18 224', sleeve, 32) + arm('M88 150 Q108 226 18 224', sleeve, 32) + hand(-8, 220, .95) + hand(8, 220, .95);
     }
     s += P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gShade)', 'opacity=".45"') + S('M-70 250 Q-52 290 -58 336 M70 250 Q52 290 58 336 M-30 300 Q-24 322 -28 340 M30 300 Q24 322 28 340', '#000', 2.5, 'opacity=".13"');
+    s += S('M-84 160 Q-60 140 -30 132 M84 160 Q60 140 30 132', '#fff', 3, 'opacity=".35"') + S('M-76 200 Q-70 250 -80 300 M76 200 Q70 250 80 300', '#000', 2, 'opacity=".12"') + P('M-100 340 C-100 205 -74 142 -20 126 L20 126 C74 142 100 205 100 340Z', 'url(#gCloth)', 'opacity=".7"');
     s += '</g>';
-    s += E(-58, 8, 7, 13, '#ffd9c4', LINE) + E(58, 8, 7, 13, '#ffd9c4', LINE);
-    s += P(FACE_G, 'url(#gSkin)', LINE);
+    s += E(-58, 8, 7, 13, '#ffd9c4', LINE) + E(58, 8, 7, 13, '#ffd9c4', LINE) + S('M-59 2 q-3 6 0 12 M59 2 q3 6 0 12', '#e49a86', 1.6, 'opacity=".6"');
+    s += P(FACE_G, 'url(#gSkin)', LINE) + P(FACE_G, 'url(#gFaceShade)', 'opacity=".6"') + P('M-30 70 Q0 88 30 70 Q0 80 -30 70Z', '#c06a5c', 'opacity=".22"');
     s += E(-34, 30, 20, 12, '#fff', 'opacity=".18"') + E(34, 30, 20, 12, '#fff', 'opacity=".18"');
     s += P('M-60 -18 Q0 6 60 -18 Q56 -46 0 -52 Q-56 -46 -60 -18Z', '#b8467a', 'opacity=".2"');
     s += face(mood, 'girl');
@@ -187,6 +194,12 @@
     s += S('M-50 -70 Q-70 -20 -66 40 M-30 -92 Q-62 -50 -58 10 M20 -92 Q50 -66 56 -20 M0 -100 Q30 -90 46 -66', '#ffd9ea', 3, 'opacity=".6"') +
       S('M-70 60 Q-76 120 -70 190 M70 60 Q76 120 70 190 M-62 80 Q-64 140 -58 196 M62 80 Q64 140 58 196', '#ffb3d1', 2.4, 'opacity=".7"') +
       S('M-70 70 Q-78 130 -72 200 M70 70 Q78 130 72 200', '#c94b83', 2.5, 'opacity=".35"');
+    s += S('M-62 -14 C-56 -40 -40 -54 -22 -56 M-22 -56 C-12 -44 -2 -38 6 -34 M6 -34 C20 -40 30 -52 28 -66 M28 -66 C44 -58 56 -44 62 -16', '#b8467a', 9, 'opacity=".16"') +
+      S('M-40 -100 Q-52 -78 -58 -50 M-18 -106 Q-30 -80 -34 -56 M8 -108 Q0 -82 2 -58 M34 -100 Q36 -78 30 -56 M54 -88 Q60 -66 58 -40', '#ff8fbd', 2.6, 'opacity=".55"') +
+      S('M-26 -100 Q-38 -76 -42 -54 M20 -104 Q18 -80 16 -60 M44 -94 Q50 -72 46 -50', '#fff', 1.6, 'opacity=".5"') +
+      S('M-80 -40 Q-96 -56 -90 -78 M78 -44 Q98 -52 94 -80 M-30 -108 Q-40 -126 -28 -134', '#ff98c3', 2, 'opacity=".8"') +
+      S('M-72 100 Q-80 150 -72 200 M72 100 Q80 150 72 200', '#fff', 2.2, 'opacity=".35"') +
+      S('M-76 30 Q-84 90 -78 150 M76 30 Q84 90 78 150', '#7a2450', 3, 'opacity=".25"');
     s += C(46, -64, 6.5, '#ffd54a', 'stroke="#e0a61a" stroke-width="2"') + C(46, -64, 2.4, '#fff');
     s += accessory(o.acc);
     return s;
@@ -207,13 +220,19 @@
     s += P('M-9 168 L9 168 L12 184 L-12 184Z', '#20202a') + P('M-12 184 L12 184 L19 318 L2 338 L-17 318Z', '#2a2a35') + S('M-5 200 L-9 300', '#fff', 1.4, 'opacity=".12"');
     s += P('M-66 -6 C-80 -84 -40 -112 0 -112 C40 -112 80 -84 66 -6 L62 40 L-62 40Z', 'url(#gHairB)', LINE);
     s += P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gShade)', 'opacity=".4"') + S('M-60 200 Q-40 250 -52 330 M60 200 Q44 250 52 330 M-20 250 Q-16 300 -22 336 M26 240 Q30 290 24 336', '#7a8098', 2.6, 'opacity=".28"');
+    s += S('M-70 160 Q-60 190 -66 230 M70 160 Q60 190 66 230 M-30 190 Q-34 230 -30 280 M32 196 Q36 236 30 286 M-52 150 Q-30 140 -20 150', '#8c93ad', 1.8, 'opacity=".4"') +
+      P('M-9 168 L9 168 L12 184 L-12 184Z', '#fff', 'opacity=".12"') + S('M-8 214 L10 218 M-9 244 L11 248 M-10 274 L12 278', '#fff', 2, 'opacity=".18"') +
+      C(-2, 150, 1.8, '#c4cadb') + C(-2, 164, 1.8, '#c4cadb') + P('M-100 340 C-100 212 -78 148 -20 128 L20 128 C78 148 100 212 100 340Z', 'url(#gCloth)', 'opacity=".6"');
     s += '</g>';
-    s += E(-56, 6, 7, 13, '#ffd9c4', LINE) + E(56, 6, 7, 13, '#ffd9c4', LINE);
-    s += P(FACE_B, 'url(#gSkin)', LINE);
+    s += E(-56, 6, 7, 13, '#ffd9c4', LINE) + E(56, 6, 7, 13, '#ffd9c4', LINE) + S('M-57 0 q-3 6 0 12 M57 0 q3 6 0 12', '#e49a86', 1.6, 'opacity=".6"');
+    s += P(FACE_B, 'url(#gSkin)', LINE) + P(FACE_B, 'url(#gFaceShade)') + S('M-40 62 Q0 82 40 62', '#b9806a', 2, 'opacity=".25"');
     s += face(mood, 'boy');
     s += P('M-62 -6 C-74 -70 -40 -104 -6 -106 L-12 -130 L12 -108 L30 -128 L34 -102 L60 -114 L52 -86 C70 -66 66 -30 62 -6 C58 -30 52 -46 38 -56 C34 -40 16 -44 8 -56 C0 -40 -20 -44 -30 -54 C-42 -40 -52 -30 -62 -6Z', 'url(#gHairB)', LINE) +
       P('M-34 -100 Q-6 -112 28 -102', 'none', 'stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"') +
       S('M-44 -86 Q-52 -50 -56 -20 M-14 -100 Q-24 -70 -30 -50 M16 -102 Q8 -76 6 -58 M44 -96 Q54 -70 58 -34', '#6a74b0', 2.4, 'opacity=".6"') + S('M-50 -60 Q-30 -86 6 -90', '#9aa8ff', 3, 'opacity=".45"') +
+      S('M-36 -96 Q-48 -70 -50 -44 M0 -104 Q-10 -80 -12 -58 M26 -102 Q30 -80 24 -60 M50 -86 Q60 -62 56 -40', '#fff', 1.6, 'opacity=".28"') +
+      S('M-56 -60 Q-62 -86 -42 -100 M40 -100 Q62 -92 62 -62', '#8a94d8', 2, 'opacity=".5"') +
+      S('M-30 -54 Q-20 -40 -8 -56 M8 -56 Q22 -40 34 -54', '#16141f', 3, 'opacity=".2"') +
       P('M-62 -6 C-64 24 -60 50 -54 60 C-54 36 -54 14 -52 -4Z', 'url(#gHairB)') + P('M62 -6 C64 24 60 50 54 60 C54 36 54 14 52 -4Z', 'url(#gHairB)');
     return s;
   }

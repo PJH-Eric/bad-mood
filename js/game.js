@@ -13,10 +13,10 @@
     '摩天輪……我們再坐一次。', '防曬乳，現在可以幫我擦了。', '（小聲）下次，也要陪我來。', '便當……我們一起吃吧。', '雞蛋，記得是「雞」蛋喔。',
     '末班車……我們慢慢走回家吧。', '蛋糕我們一人一半。', '今晚的星星，我們一起看。', '螢光棒……給你一支。', '',
   ];
-  const state = { name: '小晴', cleared: Array(20).fill(false), clearedR: Array(20).fill(false), fails: 0, failsR: 0, mode: 'fixed', speed: 'mid', sfx: true, bgm: true };
+  const state = { name: '小晴', cleared: Array(20).fill(false), clearedR: Array(20).fill(false), fails: 0, failsR: 0, mode: 'fixed', chat: true, speed: 'mid', sfx: true, bgm: true };
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
   function load() {
-    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); ['cleared', 'clearedR'].forEach((k) => { if (!Array.isArray(state[k]) || state[k].length !== 20) state[k] = Array(20).fill(false); }); if (state.mode !== 'rand') state.mode = 'fixed'; } } catch (e) { }
+    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); ['cleared', 'clearedR'].forEach((k) => { if (!Array.isArray(state[k]) || state[k].length !== 20) state[k] = Array(20).fill(false); }); if (state.mode !== 'rand') state.mode = 'fixed'; state.chat = state.chat !== false; } } catch (e) { }
   }
   const nm = (t) => String(t).replace(/\{n\}/g, state.name);
   const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -101,14 +101,32 @@
   }
   function buildQuestions(lv, idx, mode) {
     const rand = mode === 'rand', r = rand ? Math.random : rngOf((idx + 1) * 7919 + 13);
+    /* 越後面的關卡，混入越多荒謬題（第 4 關起 1 題，之後每 4 關多 1 題） */
+    const A = G.ABSURD || {}, own = A[idx] || [];
+    const ap = []; for (let k = 3; k <= idx; k++) (A[k] || []).forEach((q) => ap.push(q));
+    const na = idx < 3 ? 0 : Math.min(own.length, 1 + Math.floor((idx - 3) / 4));
+    const total = lv.fixed.length + lv.pick;
     let list;
-    if (rand) list = shuffleWith(lv.fixed.concat(lv.pool), r).slice(0, lv.fixed.length + lv.pick);
-    else { list = lv.fixed.slice(); shuffleWith(lv.pool, r).slice(0, lv.pick).forEach((q) => list.splice(1 + (r() * list.length | 0), 0, q)); }
-    return list.map((q) => {
+    if (rand) {
+      const abs = shuffleWith(ap, r).slice(0, na);
+      list = shuffleWith(lv.fixed.concat(lv.pool), r).slice(0, total - abs.length);
+      abs.forEach((q) => list.splice(r() * (list.length + 1) | 0, 0, q));
+    } else {
+      list = lv.fixed.slice();
+      shuffleWith(lv.pool, r).slice(0, Math.max(0, lv.pick - na)).forEach((q) => list.splice(1 + (r() * list.length | 0), 0, q));
+      shuffleWith(own, r).slice(0, na).forEach((q) => list.splice(Math.max(2, list.length - 1 - (r() * 3 | 0)), 0, q));
+    }
+    const bridges = list.map(() => (r() < .5 ? r() * G.BRIDGES.length | 0 : -1));
+    const tier = idx < 6 ? -1 : idx < 12 ? 0 : idx < 17 ? 1 : 2;
+    return list.map((q, qi) => {
       const good = rand ? q.good[r() * q.good.length | 0] : q.good[0];
-      const nb = Math.min(q.bad.length, rand ? [1, 2, 2, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
-      const opts = shuffleWith([{ t: addName(good, r), ok: true }].concat(shuffleWith(q.bad, r).slice(0, nb).map((t) => ({ t: addName(t, r), ok: false }))), r);
-      return { q, opts };
+      let bad = q.bad;
+      if (tier >= 0 && G.ABS_BAD && !q.absurd && r() < .35 + tier * .2) { const pool = G.ABS_BAD[Math.min(2, tier + (r() < .3 ? 1 : 0))]; bad = bad.concat(pool[r() * pool.length | 0]); }
+      const nb = Math.min(bad.length, rand ? [1, 2, 2, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
+      let wrong = shuffleWith(bad, r).slice(0, nb);
+      if (bad.length > q.bad.length && !wrong.includes(bad[bad.length - 1])) wrong[0] = bad[bad.length - 1];
+      const opts = shuffleWith([{ t: addName(good, r), ok: true }].concat(wrong.map((t) => ({ t: addName(t, r), ok: false }))), r);
+      return { q, opts, bridge: qi > 0 ? bridges[qi] : -1 };
     });
   }
   const CL = () => (state.mode === 'rand' ? state.clearedR : state.cleared);
@@ -126,15 +144,43 @@
         box.appendChild(d);
       });
       cur.opts = opts;
-      timerStart(sec, () => { box.innerHTML = ''; res({ timeout: true }); });
+      if (sec) timerStart(sec, () => { box.innerHTML = ''; res({ timeout: true }); }); else { timerStop(); $('timerBar').style.transform = 'scaleX(1)'; }
     });
   }
 
+  /* 各場景專屬介面配色：[對話框上, 對話框下, 邊框, 選項上, 選項下, 選項框, 選項字, 強調色, 按鈕上, 按鈕下, 裝飾字] */
+  const THEMES = {
+    home: ['rgba(120,74,52,.9)', 'rgba(78,46,34,.94)', '#ffe2b8', '#fffaf0', '#fbe9d2', '#e3b07a', '#5a3822', '#ffb45e', '#e9a35c', '#a8642c', '☕'],
+    conv: ['rgba(30,110,76,.9)', 'rgba(16,72,50,.94)', '#d8ffe6', '#ffffff', '#e6f8ec', '#4cc27a', '#1d5a3a', '#ff9a3c', '#ff9a3c', '#d4601a', '✚'],
+    breakfast: ['rgba(214,150,60,.9)', 'rgba(150,96,28,.94)', '#fff0c0', '#fffdf0', '#fff1c8', '#f2c14e', '#6a4410', '#ffb300', '#f7b733', '#c9801a', '☀'],
+    busstop: ['rgba(56,92,140,.9)', 'rgba(34,58,98,.94)', '#d6e8ff', '#f8fbff', '#e0ecfb', '#7fa8e0', '#25406a', '#ffd23f', '#5f95e0', '#31609e', '➤'],
+    cafe: ['rgba(110,72,50,.9)', 'rgba(66,40,28,.94)', '#f3dcc2', '#fff8ee', '#f3e2cd', '#c79a6e', '#5a3a26', '#e8a06a', '#c98a5c', '#7a4a2c', '♨'],
+    cinema: ['rgba(80,18,38,.92)', 'rgba(36,8,20,.96)', '#ffd27a', '#2a1a24', '#42222f', '#e0a63a', '#ffe9b0', '#ffcf5a', '#c8363f', '#7a1424', '★'],
+    mall: ['rgba(188,70,140,.9)', 'rgba(120,40,98,.94)', '#ffd9f0', '#fffafd', '#ffe4f3', '#f27fc0', '#6a2056', '#ffd23f', '#f06eb4', '#b03286', '♛'],
+    nightmarket: ['rgba(150,26,30,.92)', 'rgba(88,12,18,.96)', '#ffd36b', '#fff4d8', '#ffe0a0', '#e8383a', '#6a1a10', '#ffcf3a', '#e8383a', '#a01418', '❖'],
+    restaurant: ['rgba(140,40,40,.9)', 'rgba(86,22,26,.94)', '#ffe8cf', '#fff8ef', '#fbe5d0', '#d4624a', '#5a2218', '#ffb347', '#d9573f', '#9a2a22', '✿'],
+    park: ['rgba(60,128,70,.9)', 'rgba(36,86,48,.94)', '#e4ffd2', '#fbfff4', '#e6f7d6', '#8fcf6a', '#2a5a22', '#ffd966', '#74c15a', '#3a8a3a', '❀'],
+    amusement: ['rgba(120,64,190,.9)', 'rgba(74,34,130,.94)', '#ffe0fb', '#fffaff', '#f0e4ff', '#b48cf5', '#4a2a7a', '#ffdf4a', '#ff6fb5', '#a22d92', '✦'],
+    beach: ['rgba(28,128,170,.9)', 'rgba(14,86,128,.94)', '#e0fbff', '#ffffff', '#e0f6fb', '#4ec3e0', '#16506a', '#ffd35e', '#39b7de', '#146e9e', '≋'],
+    library: ['rgba(60,80,70,.92)', 'rgba(36,52,46,.95)', '#e8e0c4', '#fbf7ea', '#efe6cc', '#a49060', '#3e3a22', '#d9b45a', '#7a9a6a', '#46623e', '❧'],
+    office: ['rgba(60,70,96,.92)', 'rgba(36,42,62,.95)', '#dde3f0', '#fafbfd', '#e9edf5', '#8d9ab8', '#2b3350', '#5fb3ff', '#6a7aa8', '#3c4872', '▪'],
+    supermarket: ['rgba(196,56,48,.9)', 'rgba(128,32,32,.94)', '#fff0c8', '#fffdf4', '#ffeed2', '#f0b43c', '#6a2218', '#ffd23f', '#f05a48', '#b02820', '％'],
+    station: ['rgba(48,62,84,.92)', 'rgba(26,34,52,.96)', '#cfe0ff', '#f7faff', '#e2eaf8', '#6f8fc8', '#22304e', '#ff9d3a', '#4f78b8', '#2a4678', '◆'],
+    party: ['rgba(206,56,110,.9)', 'rgba(134,30,76,.94)', '#fff0b8', '#fffbf0', '#ffe6f0', '#ffb62e', '#6a1a46', '#ffe14a', '#ff5f9a', '#c22a70', '♪'],
+    onsen: ['rgba(120,72,44,.92)', 'rgba(74,42,26,.96)', '#ffe0c0', '#fff6ea', '#f6e0c6', '#c98a5a', '#5a3420', '#9fd8e8', '#d08a54', '#8a4c26', '♨'],
+    concert: ['rgba(34,18,80,.93)', 'rgba(14,8,44,.97)', '#7ff0ff', '#1d1440', '#2c1f60', '#ff4fd8', '#f0e6ff', '#7ff0ff', '#a54bff', '#4a1aa8', '♫'],
+    rooftop: ['rgba(26,36,86,.93)', 'rgba(12,18,52,.97)', '#c8d6ff', '#eef2ff', '#d7e0fa', '#8a9ef0', '#1e2a5a', '#ffd86a', '#6f7ff0', '#3a44b0', '☾'],
+  };
+  function applyTheme(k) {
+    const st = $('stage').style, t = THEMES[k];
+    ['--g1', '--g2', '--line', '--cA', '--cB', '--cBd', '--cInk', '--acc', '--bA', '--bB', '--deco'].forEach((v, i) => (t ? st.setProperty(v, i === 10 ? `"${t[10]}"` : t[i]) : st.removeProperty(v)));
+    if (t) st.setProperty('--hi', t[7]); else st.removeProperty('--hi');
+  }
   async function playLevel(idx) {
     const tok = ++runId, chk = () => { if (tok !== runId) throw CANCEL; };
     const lv = LV[idx], qs = buildQuestions(lv, idx, state.mode); cur = { idx, qs, qi: 0, opts: null };
     try {
-      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene);
+      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene); applyTheme(lv.scene);
       $('lvTag').textContent = `第 ${idx + 1} 關 ‧ ${lv.place} ‧ ${state.mode === 'rand' ? '全隨機' : '固定題'}`;
       const dots = $('dots'); dots.innerHTML = qs.map(() => '<i></i>').join('');
       $('timerBar').style.transform = 'scaleX(1)'; $('dlgText').textContent = ''; $('nameTag').style.display = 'none';
@@ -142,9 +188,11 @@
       $('introNo').textContent = `STAGE ${String(idx + 1).padStart(2, '0')}`; $('introPlace').textContent = lv.place; $('introTitle').textContent = lv.title;
       show('scrIntro'); await sleep(1500); chk(); hideAll();
       await say('旁白', lv.intro); chk(); await waitNext(); chk();
+      if (state.chat) await prelude(idx, chk);
       for (let qi = 0; qi < qs.length; qi++) {
         cur.qi = qi; const { q, opts } = qs[qi];
         [...dots.children].forEach((d, i) => { d.className = i < qi ? 'on' : i === qi ? 'cur' : ''; });
+        if (state.chat && qs[qi].bridge >= 0) { setBoy('normal'); setGirl('cold'); for (const bt of G.BRIDGES[qs[qi].bridge]) await beat(bt, chk); }
         setGirl(q.mood); setBoy(['angry', 'shock', 'cold', 'sad'].includes(q.mood) ? 'nervous' : 'normal');
         await say(state.name, q.q); chk();
         const r = await ask(opts, limitFor(idx)); chk(); $('choices').innerHTML = '';
@@ -165,6 +213,29 @@
       $('overMsg').textContent = `${state.name}氣得轉身走了……\n（第 ${idx + 1} 關　${lv.place}　第 ${qi + 1} / ${qs.length} 題）`;
       show('scrOver');
     }
+  }
+
+  // 閒聊一行：n 旁白、b 你、g 她
+  async function beat(bt, chk) {
+    const [who, text, mood] = bt;
+    if (who === 'g') { setGirl(mood || 'cold'); await say(state.name, text); }
+    else if (who === 'b') { setBoy('normal'); await say('你', text); }
+    else await say('旁白', text);
+    chk(); await waitNext(); chk();
+  }
+  // 進關後的閒聊＋不計分的互動，聊完才會出題
+  async function prelude(idx, chk) {
+    const c = G.CHAT[idx]; if (!c) return;
+    setBoy('normal'); setGirl('cold');
+    for (const bt of c.lines) await beat(bt, chk);
+    const w = c.warm; if (!w) return;
+    setGirl('cold'); await say(state.name, '……'); chk();
+    const r = await ask(w.ask.map((t) => ({ t, ok: true })), 0); chk(); $('choices').innerHTML = '';
+    const i = w.ask.indexOf(r.o.t);
+    await say('你', r.o.t); chk(); await sleep(600); chk();
+    Au.play('good'); setBoy('happy'); setGirl(w.reply[i][0]);
+    await say(state.name, w.reply[i][1]); chk(); await waitNext(); chk();
+    setBoy('normal');
   }
 
   async function winLevel(idx, tok) {
@@ -195,6 +266,8 @@
   }
 
   /* ---------- 選關 ---------- */
+  const CARD_IC = ['🛋️', '🏪', '🍳', '🚌', '☕', '🎬', '🛍️', '🏮', '🍜', '🌳', '🎡', '🏖️', '📚', '💼', '🛒', '🚉', '🎉', '♨️', '🎤', '🌃'];
+  const CARD_C = [['#ffd9e4', '#ff9fbd'], ['#d8f0d4', '#7fcf9a'], ['#fff0c2', '#ffc861'], ['#d6e8ff', '#8fb8f0'], ['#f1dccb', '#d9a37a'], ['#e6dcff', '#b49cf0'], ['#ffdbe9', '#f78fb6'], ['#ffe0c2', '#ff9a5c'], ['#fff2c9', '#f2c14e'], ['#daf3d0', '#8fd07a']];
   function renderSelect() {
     const g = $('grid'); g.innerHTML = ''; const cl = CL(), done = cl.filter(Boolean).length; let nextIdx = cl.indexOf(false);
     [...$('modeTabs').children].forEach((b) => b.classList.toggle('on', b.dataset.m === state.mode));
@@ -205,13 +278,15 @@
       const no = document.createElement('div'); no.className = 'no'; no.textContent = i + 1;
       const pl = document.createElement('div'); pl.className = 'pl'; pl.textContent = unlocked ? lv.place : '？？？';
       const st = document.createElement('div'); st.className = 'st'; st.textContent = !unlocked ? '未解鎖' : cl[i] ? '已通關' : i === nextIdx ? '挑戰中' : '可挑戰';
-      c.append(no, pl, st);
+      const ic = document.createElement('div'); ic.className = 'ic'; ic.textContent = unlocked ? (CARD_IC[i] || '✿') : '🔒';
+      c.style.setProperty('--c1', CARD_C[i % CARD_C.length][0]); c.style.setProperty('--c2', CARD_C[i % CARD_C.length][1]);
+      c.append(ic, no, pl, st);
       c.addEventListener('click', () => { if (!unlocked) return; Au.play('click'); playLevel(i); });
       g.appendChild(c);
     });
     $('selStat').textContent = `${done} / 20`;
   }
-  function toSelect() { runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
+  function toSelect() { applyTheme(null); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
   /* ---------- 首頁：關鍵視覺輪播 ---------- */
   const TSHOW = [['home', 'sulk', 'nervous'], ['cafe', 'angry', 'nervous'], ['park', 'happy', 'happy'], ['beach', 'blush', 'normal'], ['rooftop', 'sad', 'nervous'], ['restaurant', 'cold', 'nervous'], ['onsen', 'sulk', 'normal'], ['mall', 'shock', 'shock']];
   let tIdx = 0, tTimer = 0;
@@ -232,7 +307,7 @@
   function titleStop() { clearInterval(tTimer); titleLayout(false); ['bg', 'bgx', 'girlG', 'boyG', 'fxG', 'fxB'].forEach((i) => ($(i).style.opacity = 1)); }
   (function petals() { const p = $('petals'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random() * 100 + '%'; d.style.animationDuration = 7 + Math.random() * 7 + 's'; d.style.animationDelay = -Math.random() * 12 + 's'; d.style.setProperty('--s', .6 + Math.random() * .9); p.appendChild(d); } })();
 
-  function toTitle() { runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
+  function toTitle() { applyTheme(null); runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
 
   /* ---------- 暫停／設定／說明／確認 ---------- */
   let setBack = 'scrTitle';
@@ -251,10 +326,11 @@
   $('btnHow').onclick = () => { Au.play('click'); show('scrHow'); };
   $('howBack').onclick = () => { Au.play('click'); show('scrTitle'); };
   function refreshSet() {
-    $('swSfx').classList.toggle('on', state.sfx); $('swBgm').classList.toggle('on', state.bgm);
+    $('swSfx').classList.toggle('on', state.sfx); $('swChat').classList.toggle('on', state.chat); $('swBgm').classList.toggle('on', state.bgm);
     [...$('segSpeed').children].forEach((b) => b.classList.toggle('on', b.dataset.v === state.speed));
   }
   $('swSfx').onclick = () => { state.sfx = !state.sfx; Au.setSfx(state.sfx); save(); refreshSet(); Au.play('click'); };
+  $('swChat').onclick = () => { state.chat = !state.chat; save(); refreshSet(); Au.play('click'); };
   $('swBgm').onclick = () => { state.bgm = !state.bgm; Au.setBgm(state.bgm); save(); refreshSet(); Au.play('click'); };
   $('segSpeed').onclick = (e) => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; state.speed = v; save(); refreshSet(); Au.play('click'); };
   function confirmBox(title, msg, yes, no) {

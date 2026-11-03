@@ -133,6 +133,7 @@
       <div class="panel"><h2>設定</h2>
         <div class="setRow"><span>音效</span><div class="sw" id="swSfx"></div></div>
         <div class="setRow"><span>背景音樂</span><div class="sw" id="swBgm"></div></div>
+        <div class="setRow"><span>閒聊對話（出題前的互動）</span><div class="sw on" id="swChat"></div></div>
         <div class="setRow"><span>文字速度</span><div class="seg" id="segSpeed"><b data-v="slow">慢</b><b data-v="mid">中</b><b data-v="fast">快</b><b data-v="off">即時</b></div></div>
         <div class="setRow"><span>清除進度</span><button class="gbtn small danger" id="btnClear">清除</button></div>
         <div class="btnCol"><button class="gbtn big" id="setBack">完成</button></div>
@@ -144,6 +145,7 @@
         <div class="howText">
           <p>她今天不知道為什麼在生氣——而且每一關的理由都不一樣。</p>
           <p>聽她說的話，選出<b>最能讓她消氣</b>的回答。有時候答案很合理，有時候很離譜，有時候看似完全不重要的小事，才是真正的地雷。</p>
+          <p>進關後她不會馬上出題：你們會先聊幾句，還有一次<b>不計分</b>的小互動，氣氛到了才進入題目；題與題之間也會穿插閒聊（可在設定關閉）。</p>
           <p>每關 5～10 題，固定題＋隨機題混合，重來時隨機題與選項順序都會改變。</p>
           <p><b>任何一題答錯、或是超過時間沒回答，本關立刻 GAME OVER。</b>關卡越後面，作答時間越短。</p>
           <p class="dim">快捷鍵：1～4 選擇答案　Enter／空白鍵 繼續　Esc 暫停</p>
@@ -161,6 +163,8 @@
 </div>
 <script src="js/data-a.js"></script>
 <script src="js/data-b.js"></script>
+<script src="js/data-c.js"></script>
+<script src="js/chat.js"></script>
 <script src="js/sprites.js"></script>
 <script src="js/art.js"></script>
 <script src="js/art2.js"></script>
