@@ -11,24 +11,33 @@
     '好啦，今天就原諒你。晚餐一起吃吧。', '……剛剛那支冰淇淋，分我一口。', '下次，蛋餅也要幫我點喔。', '公車來了，傘……我們一起撐。', '這杯拿鐵，現在變甜了。',
     '爆米花，我們一起吃。', '那件藍色的，你幫我拎著。', '再去吃一次炸雞排好不好？', '今天的燭光……其實很美。', '手，借我牽一下。',
     '摩天輪……我們再坐一次。', '防曬乳，現在可以幫我擦了。', '（小聲）下次，也要陪我來。', '便當……我們一起吃吧。', '雞蛋，記得是「雞」蛋喔。',
-    '末班車……我們慢慢走回家吧。', '蛋糕我們一人一半。', '今晚的星星，我們一起看。', '螢光棒……給你一支。', '',
+    '末班車……我們慢慢走回家吧。', '蛋糕我們一人一半。', '今晚的星星，我們一起看。', '螢光棒……給你一支。', '今晚的月亮……我們慢慢聊吧。', '登機證，我自己收著，你牽我就好。', '那條毛巾，你幫我拿著。', '（小聲）花……下次你也要送我。', '煙火的聲音……我們再聽一次。', '',
   ];
-  const state = { name: '小晴', cleared: Array(20).fill(false), clearedR: Array(20).fill(false), fails: 0, failsR: 0, mode: 'fixed', chat: true, speed: 'mid', sfx: true, bgm: true };
+  const state = { name: '小晴', cleared: Array(25).fill(false), clearedR: Array(25).fill(false), fails: 0, failsR: 0, mode: 'fixed', chat: true, speed: 'mid', sfx: true, bgm: true };
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
   function load() {
-    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); ['cleared', 'clearedR'].forEach((k) => { if (!Array.isArray(state[k]) || state[k].length !== 20) state[k] = Array(20).fill(false); }); if (state.mode !== 'rand') state.mode = 'fixed'; state.chat = state.chat !== false; } } catch (e) { }
+    try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { Object.assign(state, o); ['cleared', 'clearedR'].forEach((k) => { if (!Array.isArray(state[k]) || state[k].length !== 20) state[k] = Array(25).fill(false); }); if (state.mode !== 'rand') state.mode = 'fixed'; state.chat = state.chat !== false; } } catch (e) { }
   }
   const nm = (t) => String(t).replace(/\{n\}/g, state.name);
   const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]]; } return a; };
   const debug = /[?&]debug=1/.test(location.search);
 
   /* ---------- 舞台尺寸 ---------- */
+  let lay = { dy: 0 }, layOn = true;
   function fit() {
-    // 直向裝置：舞台旋轉 90 度、以橫向畫面遊玩（整個畫面都能用，不會縮得很小）
+    // 滿版：舞台填滿整個視窗（直向裝置旋轉 90 度，以橫向遊玩）；背景以「cover」鋪滿，人物維持在安全區
     const w = innerWidth, h = innerHeight, portrait = h > w * 1.05;
-    const maxW = portrait ? h : w, maxH = portrait ? w : h, sw = Math.min(maxW, maxH * 16 / 9);
-    const st = $('stage'); st.style.width = sw + 'px'; st.style.height = sw * 9 / 16 + 'px'; st.style.setProperty('--u', sw / 960 + 'px');
+    const W = portrait ? h : w, H = portrait ? w : h, r = W / H;
+    const Vw = r >= 16 / 9 ? 540 * r : 960, Vh = r >= 16 / 9 ? 540 : 960 / r, sc = Math.max(Vw / 960, Vh / 540);
+    const st = $('stage'); st.style.width = W + 'px'; st.style.height = H + 'px'; st.style.setProperty('--u', Math.min(W / 960, H / 540) + 'px');
     st.style.rotate = portrait ? '90deg' : '0deg';
+    $('art').setAttribute('viewBox', `${480 - Vw / 2} ${270 - Vh / 2} ${Vw} ${Vh}`);
+    const bt = `translate(480 270) scale(${sc}) translate(-480 -270)`;
+    $('bg').setAttribute('transform', bt); $('bgx').setAttribute('transform', bt);
+    lay.dy = (Vh - 540) / 2;
+    const m = $('moodTint'); m.setAttribute('x', 480 - Vw / 2 - 5); m.setAttribute('y', 270 - Vh / 2 - 5); m.setAttribute('width', Vw + 10); m.setAttribute('height', Vh + 10);
+    $('fxB').setAttribute('transform', `translate(0 ${lay.dy})`); $('fxG').setAttribute('transform', `translate(0 ${lay.dy})`);
+    titleLayout(layOn);
   }
   addEventListener('resize', fit); fit();
 
@@ -86,7 +95,7 @@
     $('timerBar').style.transform = 'scaleX(1)'; timer.raf = requestAnimationFrame(loop);
   }
   function timerStop() { timer.on = false; cancelAnimationFrame(timer.raf); }
-  const limitFor = (idx) => Math.round(30 - idx * (22 / 19));
+  const limitFor = (idx) => Math.round(30 - idx * (22 / 24));
 
   /* ---------- 出題 ---------- */
   // 固定題模式：每關題目、順序、選項排列每次都完全相同（以關卡編號為種子）
@@ -122,16 +131,23 @@
       list = lv.fixed.slice();
       shuffleWith(lv.pool, r).slice(0, Math.max(0, lv.pick - na)).forEach((q) => list.splice(1 + (r() * list.length | 0), 0, q));
       shuffleWith(own, r).slice(0, na).forEach((q) => list.splice(Math.max(2, list.length - 1 - (r() * 3 | 0)), 0, q));
+      while (list.length > total) { const cand = list.map((q, i) => i).filter((i) => i > 0 && !list[i].absurd); list.splice(cand[r() * cand.length | 0], 1); }
     }
     const bridges = list.map(() => (r() < .5 ? r() * G.BRIDGES.length | 0 : -1));
-    const tier = idx < 6 ? -1 : idx < 12 ? 0 : idx < 17 ? 1 : 2;
+    // 離譜選項：所有關卡都會混入（越後面越離譜、越常出現、有時一題塞兩個）
+    const tier = idx < 5 ? 0 : idx < 15 ? 1 : 2;
     return list.map((q, qi) => {
       const good = rand ? q.good[r() * q.good.length | 0] : q.good[0];
-      let bad = q.bad;
-      if (tier >= 0 && G.ABS_BAD && !q.absurd && r() < .35 + tier * .2) { const pool = G.ABS_BAD[Math.min(2, tier + (r() < .3 ? 1 : 0))]; bad = bad.concat(pool[r() * pool.length | 0]); }
-      const nb = Math.min(bad.length, rand ? [1, 2, 2, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
-      let wrong = shuffleWith(bad, r).slice(0, nb);
-      if (bad.length > q.bad.length && !wrong.includes(bad[bad.length - 1])) wrong[0] = bad[bad.length - 1];
+      const nb = Math.min(q.bad.length + 1, rand ? [2, 2, 3, 3, 3][r() * 5 | 0] : 2 + (r() * 2 | 0));
+      const wrong = shuffleWith(q.bad, r).slice(0, nb);
+      if (G.ABS_BAD) {
+        const nAbs = q.absurd ? (idx >= 8 && r() < .5 ? 1 : 0) : (r() < .35 + idx * .025 ? 1 + (idx >= 10 && r() < .5 ? 1 : 0) : 0);
+        for (let k = 0; k < nAbs; k++) {
+          const lvl = Math.min(2, tier + (r() < .25 ? 1 : 0)), pool = G.ABS_BAD[lvl], pick = pool[r() * pool.length | 0];
+          if (wrong.includes(pick)) continue;
+          if (wrong.length >= 3) wrong[r() * wrong.length | 0] = pick; else wrong.push(pick);
+        }
+      }
       const opts = shuffleWith([{ t: addName(good, r), ok: true }].concat(wrong.map((t) => ({ t: addName(t, r), ok: false }))), r);
       return { q, opts, bridge: qi > 0 ? bridges[qi] : -1 };
     });
@@ -141,9 +157,9 @@
 
   /* ---------- 成就與結局 ---------- */
   const ACH = [
-    ['first', '初次消氣', '通過任何一個關卡'], ['ten', '十關達人', '累計通過 10 個關卡（任一模式）'], ['all', '讀心大師', '通過全部 20 關'],
+    ['first', '初次消氣', '通過任何一個關卡'], ['ten', '十關達人', '累計通過 10 個關卡（任一模式）'], ['all', '讀心大師', '通過全部 25 關'],
     ['flawless', '一次過關', '一次就通過一個關卡（中途沒有 GAME OVER）'], ['absurd', '荒謬翻譯機', '累計答對 10 題荒謬題'], ['fail10', '愈挫愈勇', '累計踩雷 10 次'],
-    ['love', '甜蜜滿分', '閒聊結束時好感達到最高'], ['rand', '隨機征服者', '在全隨機模式通關全部 20 關'], ['quick', '秒答', '在 2 秒內答對一題'], ['ending4', '收集家', '解鎖全部 4 種結局'],
+    ['love', '甜蜜滿分', '閒聊結束時好感達到最高'], ['rand', '隨機征服者', '在全隨機模式通關全部 25 關'], ['quick', '秒答', '在 2 秒內答對一題'], ['ending4', '收集家', '解鎖全部 4 種結局'],
   ];
   const ENDINGS = { true: '真・結局　讀心之戀', good: '幸福結局　高級男友', normal: '平凡結局　努力的男友', brave: '勇者結局　靠毅力的誠意' };
   function unlock(id) {
@@ -215,6 +231,11 @@
     party: ['rgba(206,56,110,.9)', 'rgba(134,30,76,.94)', '#fff0b8', '#fffbf0', '#ffe6f0', '#ffb62e', '#6a1a46', '#ffe14a', '#ff5f9a', '#c22a70', '♪'],
     onsen: ['rgba(120,72,44,.92)', 'rgba(74,42,26,.96)', '#ffe0c0', '#fff6ea', '#f6e0c6', '#c98a5a', '#5a3420', '#9fd8e8', '#d08a54', '#8a4c26', '♨'],
     concert: ['rgba(34,18,80,.93)', 'rgba(14,8,44,.97)', '#7ff0ff', '#1d1440', '#2c1f60', '#ff4fd8', '#f0e6ff', '#7ff0ff', '#a54bff', '#4a1aa8', '♫'],
+    airport: ['rgba(40,96,150,.9)', 'rgba(22,62,106,.94)', '#e0f0ff', '#fbfdff', '#e3f0fb', '#7fb6e8', '#1d4670', '#ffb74a', '#4f9be0', '#2a64a8', '✈'],
+    gym: ['rgba(48,56,84,.93)', 'rgba(22,28,48,.97)', '#ffb3c6', '#2e3550', '#3d4668', '#ff6f91', '#ffe6ee', '#ff6f91', '#ff5a82', '#a82a52', '✚'],
+    wedding: ['rgba(214,150,160,.9)', 'rgba(150,92,106,.94)', '#fff6ee', '#fffdf8', '#ffeef0', '#f2a7b6', '#6a3844', '#ffd36b', '#f08fa4', '#b8506a', '♥'],
+    newyear: ['rgba(20,28,80,.93)', 'rgba(8,12,44,.97)', '#ffd86a', '#fff8df', '#ffeaa8', '#ff6f91', '#4a2a10', '#ffd86a', '#e8453c', '#962018', '★'],
+    space: ['rgba(10,20,50,.94)', 'rgba(3,8,26,.97)', '#7fe0ff', '#10244a', '#1c3a6a', '#4fe0b0', '#d8f6ff', '#4fe0b0', '#2a8ae0', '#124a9a', '☄'],
     rooftop: ['rgba(26,36,86,.93)', 'rgba(12,18,52,.97)', '#c8d6ff', '#eef2ff', '#d7e0fa', '#8a9ef0', '#1e2a5a', '#ffd86a', '#6f7ff0', '#3a44b0', '☾'],
   };
   function applyTheme(k) {
@@ -325,7 +346,7 @@
     unlock('first'); if (CL().filter(Boolean).length + (state.mode === 'fixed' ? state.clearedR : state.cleared).filter(Boolean).length >= 10) unlock('ten');
     if (!(state.lf && state.lf[state.mode + idx])) unlock('flawless');
     setGirl('happy'); setBoy('happy');
-    if (idx === 19) { await endGame(tok); return; }
+    if (idx === 24) { await endGame(tok); return; }
     await say(state.name, CLEARS[idx]); chk(); await waitNext(); chk();
     inGameUI(false);
     $('clearMsg').textContent = `${state.name}消氣了！\n第 ${idx + 1} 關　${LV[idx].place}　通關`;
@@ -349,7 +370,7 @@
     setGirl('happy'); inGameUI(false);
     const f = state[FK()];
     const rank = f <= 5 ? '完美男友　讀心術大師' : f <= 15 ? '超懂她　高級男友' : f <= 30 ? '努力型男友　愈挫愈勇' : '靠毅力通關的勇者　她看見了你的誠意';
-    $('endMsg').textContent = `${state.name}終於笑了。\n恭喜你通過全部 20 個場景！（${state.mode === 'rand' ? '全隨機模式' : '固定題模式'}）`;
+    $('endMsg').textContent = `${state.name}終於笑了。\n恭喜你通過全部 25 個場景！（${state.mode === 'rand' ? '全隨機模式' : '固定題模式'}）`;
     $('endStat').innerHTML = '';
     const a = document.createElement('div'); a.append('累計踩雷（GAME OVER）次數：', Object.assign(document.createElement('b'), { textContent: f }), ' 次');
     const b = document.createElement('div'); b.append('評級：', Object.assign(document.createElement('b'), { textContent: rank }));
@@ -359,7 +380,7 @@
   }
 
   /* ---------- 選關 ---------- */
-  const CARD_IC = ['🛋️', '🏪', '🍳', '🚌', '☕', '🎬', '🛍️', '🏮', '🍜', '🌳', '🎡', '🏖️', '📚', '💼', '🛒', '🚉', '🎉', '♨️', '🎤', '🌃'];
+  const CARD_IC = ['🛋️', '🏪', '🍳', '🚌', '☕', '🎬', '🛍️', '🏮', '🍜', '🌳', '🎡', '🏖️', '📚', '💼', '🛒', '🚉', '🎉', '♨️', '🎤', '🌃', '✈️', '🏋️', '💒', '🎆', '🚀'];
   const CARD_C = [['#ffd9e4', '#ff9fbd'], ['#d8f0d4', '#7fcf9a'], ['#fff0c2', '#ffc861'], ['#d6e8ff', '#8fb8f0'], ['#f1dccb', '#d9a37a'], ['#e6dcff', '#b49cf0'], ['#ffdbe9', '#f78fb6'], ['#ffe0c2', '#ff9a5c'], ['#fff2c9', '#f2c14e'], ['#daf3d0', '#8fd07a']];
   function renderSelect() {
     const g = $('grid'); g.innerHTML = ''; const cl = CL(), done = cl.filter(Boolean).length; let nextIdx = cl.indexOf(false);
@@ -377,15 +398,16 @@
       c.addEventListener('click', () => { if (!unlocked) return; Au.play('click'); playLevel(i); });
       g.appendChild(c);
     });
-    $('selStat').textContent = `${done} / 20`;
+    $('selStat').textContent = `${done} / 25`;
   }
   function toSelect() { Au.setScene('home'); applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
   /* ---------- 首頁：關鍵視覺輪播 ---------- */
   const TSHOW = [['home', 'sulk', 'nervous'], ['cafe', 'angry', 'nervous'], ['park', 'happy', 'happy'], ['beach', 'blush', 'normal'], ['rooftop', 'sad', 'nervous'], ['restaurant', 'cold', 'nervous'], ['onsen', 'sulk', 'normal'], ['mall', 'shock', 'shock']];
   let tIdx = 0, tTimer = 0;
   function titleLayout(on) {
-    $('boyG').setAttribute('transform', on ? 'translate(150 214) scale(1.14)' : 'translate(190 172) scale(.96)');
-    $('girlG').setAttribute('transform', on ? 'translate(810 214) scale(1.14)' : 'translate(770 172) scale(.96)');
+    layOn = on; const d = lay.dy || 0;
+    $('boyG').setAttribute('transform', on ? `translate(150 ${214 + d}) scale(1.14)` : `translate(190 ${172 + d}) scale(.96)`);
+    $('girlG').setAttribute('transform', on ? `translate(810 ${214 + d}) scale(1.14)` : `translate(770 ${172 + d}) scale(.96)`);
   }
   function titleFrame() { const [sc, gm, bm] = TSHOW[tIdx % TSHOW.length]; setScene(sc); setGirl(gm); setBoy(bm); }
   function titleStart() {
@@ -436,7 +458,7 @@
     confirmBox('離開本關', '要離開這一關、回到選關畫面嗎？\n本關目前的進度不會保留。', toSelect, closePause);
   };
   $('pHome').onclick = () => { Au.play('click'); paused = false; timer.paused = false; toTitle(); };
-  $('btnClear').onclick = () => confirmBox('清除進度', '所有關卡進度與累計次數都會歸零，確定要清除嗎？', () => { state.cleared = Array(20).fill(false); state.clearedR = Array(20).fill(false); state.fails = 0; state.failsR = 0; save(); refreshSet(); show('scrSet'); });
+  $('btnClear').onclick = () => confirmBox('清除進度', '所有關卡進度與累計次數都會歸零，確定要清除嗎？', () => { state.cleared = Array(25).fill(false); state.clearedR = Array(25).fill(false); state.fails = 0; state.failsR = 0; save(); refreshSet(); show('scrSet'); });
 
   /* ---------- 其他按鈕 ---------- */
   $('btnStart').onclick = () => {

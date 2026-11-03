@@ -81,6 +81,11 @@
       R(30, 300, 70, 130, '#14102c', 'rx="6"') + C(65, 340, 22, '#2a2250') + C(65, 340, 10, '#8a7cff') + R(860, 300, 70, 130, '#14102c', 'rx="6"') + C(895, 340, 22, '#2a2250') + C(895, 340, 10, '#8a7cff') +
       twk(40, 0, 960, 20, 420, '#fff', 1.8) + E(480, 440, 480, 40, '#b36bff', 'opacity=".12"') +
       Array.from({ length: 10 }, (_, i) => `<g class="sway" ${dl(i, 3)}>${R(70 + i * 90, 400 - (i % 3) * 8, 5, 46, ['#ff5fa2', '#5fd4ff', '#ffd35f'][i % 3], 'rx="2"')}</g>`).join(''),
+    airport: () => `<g class="plane">${P('M-80 0 L40 -10 L110 -22 L130 -16 L50 6 L-20 16Z', '#fff', 'stroke="#c8d4e0" stroke-width="2"')}</g>`.replace('<g class="plane">', '<g class="sway" transform="translate(200 110)">') + twk(14, 60, 900, 40, 300, '#fff', 1.2) + R(332, 22, 296, 4, '#ffd24a', 'class="twk" opacity=".6"'),
+    gym: () => `<g class="sway">${R(430, 300, 6, 30, '#fff', 'opacity=".25"')}</g>` + C(240, 170, 60, '#ffd0e0', 'opacity=".08" class="pulse"') + steam(620, 330, 2, '#fff'),
+    wedding: () => [0, 1, 2, 3, 4, 5].map(i => `<g class="floatup" ${dl(i, 6)}>${C(120 + i * 150, 440, 7, ['#fff', '#ffd1dc', '#ffe6a8'][i % 3], 'opacity=".9"')}</g>`).join('') + [0, 1, 2].map(i => `<g class="floatup" ${dl(i, 5)}>${heart(300 + i * 180, 420, 1 + i * .2, '#ff9fc0')}</g>`).join(''),
+    newyear: () => [[160, 90, '#ff6f91'], [480, 60, '#ffd86a'], [780, 110, '#7fe0ff'], [330, 150, '#a06bff'], [650, 150, '#7fe08c']].map(([x, y, c], i) => `<g class="pulse" ${dl(i, 3)}>${[0, 1, 2, 3, 4, 5, 6, 7].map(k => { const a = k * Math.PI / 4; return S(`M${x + Math.cos(a) * 14} ${y + Math.sin(a) * 14} L${x + Math.cos(a) * 54} ${y + Math.sin(a) * 54}`, c, 3); }).join('')}${C(x, y, 5, '#fff')}</g>`).join('') + twk(30, 0, 960, 10, 260, '#fff', 1.6),
+    space: () => twk(60, 0, 960, 20, 380, '#fff', 1.6) + `<g class="sway">${R(600, 300, 40, 24, '#e8505b', 'rx="6"')}${C(640, 312, 8, '#ffd24a')}</g>` + `<g class="floatup" ${dl(1, 6)}>${C(300, 300, 10, '#7fe0ff', 'opacity=".7"')}</g>` + C(250, 330, 300, '#8fd0ff', 'opacity=".05" class="pulse"'),
     rooftop: () => `<g class="shoot">${S('M0 0 L80 50', '#fff', 3)}${C(80, 50, 4, '#fff')}</g>` + R(380, 350, 200, 10, '#e8d9f4', 'opacity=".9"') + R(400, 360, 10, 50, '#6e6890') + R(550, 360, 10, 50, '#6e6890') + glass(440, 346) + glass(520, 346) +
       R(476, 320, 8, 26, '#fff3d0') + P('M480 304 q-6 10 0 14 q6 -4 0 -14Z', '#ffb02e') + C(480, 312, 22, '#ffd27d', 'opacity=".25" class="pulse"') +
       [0, 1, 2, 3, 4].map(i => `<g class="floatup" ${dl(i, 6)}>${heart(300 + i * 90, 400, 1 + (i % 2) * .4, i % 2 ? '#ff9fc0' : '#ff6f9c')}</g>`).join('') + P('M40 420 h120 l-10 -40 h-100Z', '#c2185b', 'opacity=".5"') + twk(26, 0, 960, 0, 300, '#fff', 1.8),
@@ -173,8 +178,13 @@
     onsen: { y: 410, type: 'tatami', c1: '#c9d48c', c2: '#8a9850', opaque: 1 },
     concert: null,
     rooftop: { y: 412, type: 'concrete', c1: '#554d74', c2: '#262140', opaque: 1 },
+    airport: { y: 316, type: 'tile', c1: '#eef1f6', c2: '#c6cedd', opaque: 1 },
+    gym: { y: 412, type: 'concrete', c1: '#3a4156', c2: '#20263a', opaque: 1 },
+    wedding: { y: 424, type: 'tile', c1: '#f6ece4', c2: '#dccbbf', opaque: 1 },
+    newyear: { y: 410, type: 'concrete', c1: '#323a72', c2: '#161c40', opaque: 1 },
+    space: null,
   };
-  const WALLS = ['home', 'conv', 'breakfast', 'cafe', 'cinema', 'mall', 'restaurant', 'library', 'office', 'supermarket', 'onsen', 'party'];
+  const WALLS = ['wedding', 'home', 'conv', 'breakfast', 'cafe', 'cinema', 'mall', 'restaurant', 'library', 'office', 'supermarket', 'onsen', 'party'];
   const GLOW = {
     home: [[535, 150, 150, '#fff3c0', .5]], conv: [[480, 60, 260, '#cfe8ff', .35]],
     breakfast: [[520, 98, 80, '#ffd080', .6], [640, 98, 80, '#ffd080', .6], [760, 98, 80, '#ffd080', .6]], busstop: [[885, 120, 130, '#ffe9a0', .5]],
@@ -184,8 +194,9 @@
     amusement: [[180, 230, 280, '#ffd0e8', .25]], beach: [[800, 100, 280, '#fff2a0', .5]], library: [[470, 72, 150, '#9be07a', .4], [480, 200, 300, '#fff6c8', .2]],
     office: [[250, 60, 200, '#8fb6ff', .25]], supermarket: [[480, 10, 420, '#fff', .28]], station: [[480, 90, 130, '#fff', .35]], party: [[480, 260, 220, '#ffd0e0', .3]],
     onsen: [[470, 72, 150, '#ff8a5c', .5], [690, 190, 270, '#9bd0ff', .2]], concert: [[480, 230, 340, '#b36bff', .3]], rooftop: [[130, 100, 170, '#fff6c8', .5], [480, 310, 130, '#ffd27d', .4]],
+    airport: [[480, 150, 380, '#fff', .3]], gym: [[250, 190, 180, '#d8f0ff', .3], [720, 230, 200, '#ff9fbd', .15]], wedding: [[480, 200, 280, '#fff0d8', .45]], newyear: [[480, 350, 200, '#ffd86a', .3]], space: [[250, 330, 280, '#8fd0ff', .3], [710, 190, 160, '#4fe0b0', .2]],
   };
-  const NIGHT = { conv: '#cfe8ff', busstop: '#ffe9a0', nightmarket: '#ffd27d', restaurant: '#ffd27d', office: '#ffe27a', station: '#fff3c0', concert: '#ff8fd0', rooftop: '#ffe27a' };
+  const NIGHT = { newyear: '#ffd86a', space: '#7fe0ff', gym: '#ff9fbd', conv: '#cfe8ff', busstop: '#ffe9a0', nightmarket: '#ffd27d', restaurant: '#ffd27d', office: '#ffe27a', station: '#fff3c0', concert: '#ff8fd0', rooftop: '#ffe27a' };
 
   function floorSvg(f) {
     if (!f) return '';

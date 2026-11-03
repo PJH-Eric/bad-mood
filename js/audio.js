@@ -38,6 +38,7 @@
     restaurant: [-3, 165, 'triangle', 2, 'crowd'], park: [3, 160, 'triangle', 1, 'birds'], amusement: [9, 120, 'square', 1, 'crowd'], beach: [5, 155, 'sine', 1, 'waves'],
     library: [-9, 210, 'sine', 2, ''], office: [-4, 175, 'triangle', 2, 'hum'], supermarket: [6, 140, 'square', 1, 'hum'], station: [-2, 165, 'triangle', 2, 'crowd'],
     party: [7, 120, 'square', 1, 'crowd'], onsen: [-6, 200, 'sine', 2, 'water'], concert: [2, 115, 'sawtooth', 1, 'crowd'], rooftop: [-7, 195, 'sine', 2, 'wind'],
+    airport: [3, 150, 'triangle', 1, 'crowd'], gym: [5, 120, 'sawtooth', 1, 'hum'], wedding: [0, 190, 'sine', 2, ''], newyear: [7, 125, 'square', 1, 'crowd'], space: [-9, 220, 'sine', 2, 'hum'],
   };
   let sty = STY.home, ambNode = null, birdT = null;
   function stopAmb() { clearInterval(birdT); if (ambNode) { try { ambNode.src.stop(); } catch (e) { } try { ambNode.g.disconnect(); } catch (e) { } ambNode = null; } }

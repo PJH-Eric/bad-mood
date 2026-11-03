@@ -394,6 +394,63 @@
       for (let i = 0; i < 17; i++) o += C(i * 60, 100 + (i % 2) * 38 - 30, 7, '#ffe27a') + C(i * 60, 100 + (i % 2) * 38 - 30, 18, '#ffe27a', 'opacity=".15"');
       return o;
     },
+    airport() {
+      let o = bgGrad('bgap', '#cfe9ff', '#f4f8fc') + R(0, 0, 960, 540, 'url(#bgap)');
+      o += R(60, 60, 840, 250, '#bfe3ff', 'rx="8" stroke="#fff" stroke-width="8"');
+      for (let i = 1; i < 6; i++) o += R(60 + i * 140 - 3, 60, 6, 250, '#fff');
+      o += R(60, 180, 840, 5, '#fff') + R(60, 240, 840, 70, '#9ec8a0', 'opacity=".55"') + R(60, 262, 840, 6, '#fff', 'opacity=".7"');
+      o += P('M640 150 L760 140 L830 128 L850 134 L770 156 L700 166Z', '#fff', 'stroke="#c8d4e0" stroke-width="2"') + P('M780 138 L800 98 L812 98 L806 134Z', '#e8505b') + P('M700 160 L660 190 L690 192 L730 164Z', '#dfe8f2');
+      o += R(0, 310, 960, 230, '#e9edf3') + R(0, 306, 960, 8, '#c4ccd8');
+      o += R(330, 20, 300, 40, '#10203a', 'rx="6"') + TX(480, 49, '出發 DEPARTURES', 20, '#ffd24a');
+      for (let i = 0; i < 8; i++) o += R(350 + (i % 4) * 66, 28 + Math.floor(i / 4) * 0, 0, 0, '#000');
+      for (let i = 0; i < 4; i++) o += R(60 + i * 150, 420, 110, 12, '#7d8aa3', 'rx="4"') + R(66 + i * 150, 432, 8, 24, '#5a6580') + R(96 + i * 150, 432, 8, 24, '#5a6580') + R(60 + i * 150, 396, 110, 26, '#8f9cb8', 'rx="6"');
+      o += R(770, 372, 70, 80, '#e8505b', 'rx="8"') + R(788, 356, 34, 18, 'none', 'stroke="#7a2030" stroke-width="5" rx="4"') + C(782, 462, 6, '#333') + C(828, 462, 6, '#333');
+      o += R(860, 392, 54, 60, '#4a8ad8', 'rx="8"') + C(872, 462, 5, '#333') + C(902, 462, 5, '#333');
+      return o;
+    },
+    gym() {
+      let o = bgGrad('bggy', '#3a4358', '#232a3a') + R(0, 0, 960, 540, 'url(#bggy)');
+      o += R(40, 70, 420, 250, '#cfe6f2', 'rx="6" stroke="#8fa4b4" stroke-width="8"') + P('M60 80 L180 80 L100 300 L60 300Z', '#fff', 'opacity=".25"') + P('M240 80 L330 80 L250 300 L200 300Z', '#fff', 'opacity=".18"');
+      o += R(520, 60, 400, 14, '#ff6f91') + TX(720, 130, 'NO PAIN NO GAIN', 28, '#fff');
+      o += R(520, 150, 360, 150, '#2c3448', 'rx="6"');
+      for (let i = 0; i < 5; i++) { const y = 170 + i * 26; o += R(540, y, 320, 5, '#8a94a8') + C(560 + i * 14, y - 8, 12 - i, '#ff6f91') + C(620 + i * 14, y - 8, 14 - i, '#4fd0e0') + C(700 + i * 12, y - 8, 11, '#ffd24a') + C(780 + i * 6, y - 8, 13 - i, '#a06bff'); }
+      o += R(0, 410, 960, 130, '#2e3446') + R(0, 400, 960, 14, '#ff6f91', 'opacity=".9"');
+      for (let i = 0; i < 12; i++) o += R(i * 80, 414, 2, 126, '#fff', 'opacity=".05"');
+      o += R(80, 330, 190, 18, '#1b2030', 'rx="6"') + P('M110 330 L160 230 L180 238 L140 330Z', '#46506a') + R(150, 224, 50, 10, '#ff6f91', 'rx="4"') + R(86, 346, 12, 62, '#1b2030') + R(250, 346, 12, 62, '#1b2030');
+      o += R(700, 330, 160, 14, '#1b2030') + R(716, 344, 10, 62, '#1b2030') + R(834, 344, 10, 62, '#1b2030') + R(690, 300, 180, 10, '#9aa3b8', 'rx="5"') + C(690, 305, 22, '#46506a') + C(870, 305, 22, '#46506a');
+      return o;
+    },
+    wedding() {
+      let o = bgGrad('bgwd', '#fff6ee', '#f6e4e0') + R(0, 0, 960, 540, 'url(#bgwd)');
+      for (let i = 0; i < 4; i++) o += R(40 + i * 280, 40, 36, 380, '#fffdf8', 'stroke="#e8d6d0" stroke-width="3"') + R(32 + i * 280, 30, 52, 16, '#f1e2dc') + R(32 + i * 280, 414, 52, 16, '#f1e2dc');
+      o += P('M290 410 Q290 120 480 90 Q670 120 670 410 L640 410 Q640 150 480 124 Q320 150 320 410Z', '#fffdf8', 'stroke="#e0cfc8" stroke-width="3"');
+      for (let i = 0; i < 26; i++) { const a = Math.PI * (.08 + i / 26 * .84), x = 480 - Math.cos(a) * 170, y = 270 - Math.sin(a) * 160; o += C(x, y, 9 + (i % 3) * 2, ['#ff9fbd', '#fff', '#ffd1dc', '#ffb3c6'][i % 4]) + C(x + 5, y + 5, 5, '#7fc99a', 'opacity=".8"'); }
+      o += R(0, 420, 960, 120, '#f2e6dc') + P('M410 420 L550 420 L640 540 L320 540Z', '#c2273d') + P('M440 420 L520 420 L580 540 L380 540Z', '#d63a50', 'opacity=".6"');
+      for (let i = 0; i < 3; i++) o += R(60 + i * 90, 420 + i * 8, 50, 30, '#fffaf3', 'rx="6" stroke="#e2d4ca" stroke-width="2"') + R(750 + i * 60, 420 + i * 8, 40, 30, '#fffaf3', 'rx="6" stroke="#e2d4ca" stroke-width="2"');
+      for (let i = 0; i < 9; i++) o += S(`M${100 + i * 95} 0 V${60 + (i % 3) * 24}`, '#d8c0b8', 1.5) + C(100 + i * 95, 66 + (i % 3) * 24, 13, ['#ffd1dc', '#fff', '#ffe6a8'][i % 3], 'stroke="#fff" stroke-width="2"');
+      return o;
+    },
+    newyear() {
+      let o = bgGrad('bgny', '#060a28', '#1d2860') + R(0, 0, 960, 540, 'url(#bgny)');
+      for (let i = 0; i < 70; i++) o += C(rnd() * 960, rnd() * 260, rnd() * 1.6 + .5, '#fff', `opacity="${.4 + rnd() * .5}"`);
+      let x = 0; while (x < 960) { const w = 50 + rnd() * 60, h = 120 + rnd() * 190; o += R(x, 420 - h, w, h, '#101842') ; for (let k = 0; k < 14; k++) o += R(x + 6 + (k % 4) * 11, 420 - h + 10 + Math.floor(k / 4) * 16, 6, 8, rnd() > .4 ? '#ffd86a' : '#2a3466', 'opacity=".85"'); x += w + 4; }
+      o += R(0, 410, 960, 130, '#262c58') + R(0, 400, 960, 12, '#46508a') + S('M0 400 H960', '#cfd6ff', 3);
+      o += R(360, 300, 240, 100, '#10163a', 'rx="8" stroke="#ffd86a" stroke-width="4"') + TX(480, 346, '新年快樂', 44, '#ffd86a') + TX(480, 384, 'HAPPY NEW YEAR', 18, '#fff');
+      for (let i = 0; i < 17; i++) o += C(i * 60, 70 + (i % 2) * 30, 6, ['#ff6f91', '#ffd86a', '#7fe0ff'][i % 3]);
+      o += S('M0 70 Q120 120 240 70 T480 70 T720 70 T960 70', '#ffd86a', 2);
+      return o;
+    },
+    space() {
+      let o = bgGrad('bgsp', '#02030c', '#101640') + R(0, 0, 960, 540, 'url(#bgsp)');
+      for (let i = 0; i < 160; i++) o += C(rnd() * 960, rnd() * 400, rnd() * 1.5 + .4, '#fff', `opacity="${.4 + rnd() * .6}"`);
+      o += C(250, 520, 340, '#2a6fd0') + C(250, 520, 340, 'none', 'stroke="#8fd0ff" stroke-width="6" opacity=".6"') + P('M120 330 q50 -40 110 -20 q-20 30 -50 40 q-30 10 -60 -20Z M280 260 q50 -20 90 10 q-30 20 -70 10Z', '#58b86a', 'opacity=".85"') + E(250, 330, 280, 40, '#fff', 'opacity=".12"');
+      o += R(0, 0, 960, 30, '#2b3350') + R(0, 380, 960, 160, '#2b3350') + R(0, 380, 960, 14, '#4a5578') + R(0, 0, 40, 540, '#2b3350') + R(920, 0, 40, 540, '#2b3350');
+      for (let i = 0; i < 10; i++) o += R(60 + i * 88, 400, 60, 100, '#1d2438', 'rx="4"') + C(90 + i * 88, 430, 7, i % 3 ? '#4fe0b0' : '#ff6f91') + R(70 + i * 88, 456, 40, 6, '#8a94b8');
+      o += R(560, 90, 300, 190, '#101830', 'rx="10" stroke="#5a6aa0" stroke-width="6"') + S('M580 240 L640 190 L700 220 L770 140 L840 180', '#4fe0b0', 3) + TX(710, 120, 'ORBIT 01', 22, '#7fe0ff');
+      o += R(40, 40, 30, 340, '#8a94b8') + R(890, 40, 30, 340, '#8a94b8');
+      return o;
+    },
+
   };
 
   /* ---------- 女主角的場景服裝 ---------- */
@@ -405,6 +462,8 @@
     library: { kind: 'sweater', c1: '#b4c8f0', acc: 'glasses' }, office: { kind: 'blouse', c1: '#e8ecf6', c2: '#d8283f' }, supermarket: { kind: 'dress', c1: '#ffd166', c2: '#fff' },
     station: { kind: 'coat', c1: '#3b4a7a', c2: '#ff9a3c' }, party: { kind: 'dress', c1: '#ff9cc2', c2: '#fff', acc: 'partyhat' }, onsen: { kind: 'yukata', c1: '#5aa9e6', c2: '#f4a8c3', acc: 'flower' },
     concert: { kind: 'tee', c1: '#ffffff', c2: '#ff5fa2', acc: 'headband' }, rooftop: { kind: 'formal', c1: '#c2185b', c2: '#ffe7f0', acc: 'tiara' },
+    airport: { kind: 'coat', c1: '#e8d6c0', c2: '#5a8fd0' }, gym: { kind: 'tee', c1: '#ff6f91', c2: '#fff', acc: 'headband' }, wedding: { kind: 'formal', c1: '#fffaf5', c2: '#ffd6e0', acc: 'tiara' },
+    newyear: { kind: 'coat', c1: '#c0392b', c2: '#fff' }, space: { kind: 'tee', c1: '#dfe8ff', c2: '#5fd4ff', acc: 'headband' },
   };
 
   // 立繪圖片：以頭部中心為原點、約 340 寬 × 480 高，可在 js/sprites.js 指定
