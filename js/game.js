@@ -136,7 +136,7 @@
   let runId = 0, cur = null, paused = false;
   function ask(opts, sec) {
     return new Promise((res) => {
-      const box = $('choices'); box.innerHTML = '';
+      camTo(50, 1, .8); const box = $('choices'); box.innerHTML = '';
       opts.forEach((o, i) => {
         const d = document.createElement('div'); d.className = 'choice'; d.style.animationDelay = i * 60 + 'ms';
         const b = document.createElement('b'); b.textContent = i + 1; d.append(b, document.createTextNode(nm(o.t)));
@@ -180,7 +180,7 @@
     const tok = ++runId, chk = () => { if (tok !== runId) throw CANCEL; };
     const lv = LV[idx], qs = buildQuestions(lv, idx, state.mode); cur = { idx, qs, qi: 0, opts: null };
     try {
-      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene); applyTheme(lv.scene);
+      titleStop(); hideAll(); inGameUI(true); setScene(lv.scene); applyTheme(lv.scene); camTo(50, 1, 0);
       $('lvTag').textContent = `第 ${idx + 1} 關 ‧ ${lv.place} ‧ ${state.mode === 'rand' ? '全隨機' : '固定題'}`;
       const dots = $('dots'); dots.innerHTML = qs.map(() => '<i></i>').join('');
       $('timerBar').style.transform = 'scaleX(1)'; $('dlgText').textContent = ''; $('nameTag').style.display = 'none';
@@ -216,24 +216,37 @@
   }
 
   // 閒聊一行：n 旁白、b 你、g 她
+  /* ---------- 閒聊時的鏡頭與角色動作 ---------- */
+  function camTo(ox, sc, dur) { const a = $('art').style; a.transformOrigin = `${ox}% 58%`; a.transition = dur === 0 ? 'none' : `transform ${dur || 1.4}s ease-in-out`; a.transform = `scale(${sc})`; }
+  function actor(id, kf, ms) { const g = $(id).firstElementChild; if (g && g.animate) g.animate(kf, { duration: ms, easing: 'ease-out' }); }
+  function stageAct(who) {
+    if (who === 'g') { camTo(72, 1.07); actor('girlG', [{ translate: '0 0' }, { translate: '0 -9px' }, { translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 520); actor('boyG', [{ translate: '0 0' }, { translate: '10px 0' }, { translate: '0 0' }], 700); }
+    else if (who === 'b') { camTo(28, 1.07); actor('boyG', [{ translate: '0 0' }, { translate: '0 -9px' }, { translate: '0 0' }, { translate: '0 -4px' }, { translate: '0 0' }], 520); actor('girlG', [{ translate: '0 0' }, { translate: '-10px 0' }, { translate: '0 0' }], 700); }
+    else camTo(50, 1.03, 1.8);
+  }
+  function walkIn() {
+    camTo(50, 1.1, 0); void $('art').offsetWidth; camTo(50, 1.03, 2.2);
+    const step = (sx) => [{ translate: `${sx}px 0` }, { translate: `${sx * .7}px -9px` }, { translate: `${sx * .45}px 0` }, { translate: `${sx * .22}px -7px` }, { translate: '0 0' }];
+    actor('boyG', step(-110), 1500); actor('girlG', step(110), 1500);
+  }
   async function beat(bt, chk) {
     const [who, text, mood] = bt;
-    if (who === 'g') { setGirl(mood || 'cold'); await say(state.name, text); }
-    else if (who === 'b') { setBoy('normal'); await say('你', text); }
-    else await say('旁白', text);
+    if (who === 'g') { setGirl(mood || 'cold'); stageAct('g'); await say(state.name, text); }
+    else if (who === 'b') { setBoy('normal'); stageAct('b'); await say('你', text); }
+    else { stageAct('n'); await say('旁白', text); }
     chk(); await waitNext(); chk();
   }
   // 進關後的閒聊＋不計分的互動，聊完才會出題
   async function prelude(idx, chk) {
     const c = G.CHAT[idx]; if (!c) return;
-    setBoy('normal'); setGirl('cold');
+    setBoy('normal'); setGirl('cold'); walkIn();
     for (const bt of c.lines) await beat(bt, chk);
     const w = c.warm; if (!w) return;
-    setGirl('cold'); await say(state.name, '……'); chk();
+    setGirl('cold'); stageAct('g'); await say(state.name, '……'); chk();
     const r = await ask(w.ask.map((t) => ({ t, ok: true })), 0); chk(); $('choices').innerHTML = '';
     const i = w.ask.indexOf(r.o.t);
-    await say('你', r.o.t); chk(); await sleep(600); chk();
-    Au.play('good'); setBoy('happy'); setGirl(w.reply[i][0]);
+    stageAct('b'); await say('你', r.o.t); chk(); await sleep(600); chk();
+    Au.play('good'); setBoy('happy'); setGirl(w.reply[i][0]); stageAct('g');
     await say(state.name, w.reply[i][1]); chk(); await waitNext(); chk();
     setBoy('normal');
   }
@@ -286,7 +299,7 @@
     });
     $('selStat').textContent = `${done} / 20`;
   }
-  function toSelect() { applyTheme(null); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
+  function toSelect() { applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); paused = false; renderSelect(); show('scrSelect'); }
   /* ---------- 首頁：關鍵視覺輪播 ---------- */
   const TSHOW = [['home', 'sulk', 'nervous'], ['cafe', 'angry', 'nervous'], ['park', 'happy', 'happy'], ['beach', 'blush', 'normal'], ['rooftop', 'sad', 'nervous'], ['restaurant', 'cold', 'nervous'], ['onsen', 'sulk', 'normal'], ['mall', 'shock', 'shock']];
   let tIdx = 0, tTimer = 0;
@@ -307,7 +320,7 @@
   function titleStop() { clearInterval(tTimer); titleLayout(false); ['bg', 'bgx', 'girlG', 'boyG', 'fxG', 'fxB'].forEach((i) => ($(i).style.opacity = 1)); }
   (function petals() { const p = $('petals'); for (let i = 0; i < 16; i++) { const d = document.createElement('i'); d.style.left = Math.random() * 100 + '%'; d.style.animationDuration = 7 + Math.random() * 7 + 's'; d.style.animationDelay = -Math.random() * 12 + 's'; d.style.setProperty('--s', .6 + Math.random() * .9); p.appendChild(d); } })();
 
-  function toTitle() { applyTheme(null); runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
+  function toTitle() { applyTheme(null); camTo(50, 1, 0); runId++; timerStop(); inGameUI(false); show('scrTitle'); titleStart(); }
 
   /* ---------- 暫停／設定／說明／確認 ---------- */
   let setBack = 'scrTitle';
